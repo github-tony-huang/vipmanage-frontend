@@ -7,7 +7,7 @@ ENV API_BACKEND=http://localhost:8080
 ENV NGINX_ENVSUBST_FILTER=API_BACKEND
 
 # 构建产物
-COPY /build/dist /usr/share/nginx/html
+COPY dist /usr/share/nginx/html
 
 # nginx 配置模板：放到 templates 目录，nginx 官方镜像启动时
 # 会自动用环境变量执行 envsubst 替换 ${API_BACKEND}，生成到 conf.d
