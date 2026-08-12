@@ -11,6 +11,8 @@ import SignList from './pages/Sign/List';
 import TransactionList from './pages/Transaction/List';
 import OnlineList from './pages/Admin/OnlineList';
 import RoleList from './pages/Admin/RoleList';
+import StaffList from './pages/Admin/StaffList';
+import OperationLogList from './pages/Admin/OperationLogList';
 
 // 受保护的路由组件
 const ProtectedRoute = ({ children }: { children: React.ReactNode }) => {
@@ -43,7 +45,9 @@ function App() {
           <Route path="signs" element={<SignList />} />
           <Route path="transactions" element={<TransactionList />} />
           <Route path="admin/online" element={<OnlineList />} />
+          <Route path="admin/staff" element={<StaffList />} />
           <Route path="admin/roles" element={<RoleList />} />
+          <Route path="admin/logs" element={<OperationLogList />} />
         </Route>
       </Routes>
     </BrowserRouter>

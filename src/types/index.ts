@@ -193,6 +193,31 @@ export interface Role {
   permission_ids: number[];
 }
 
+// 员工
+export interface Staff {
+  id: number;
+  username: string;
+  nickname: string;
+  role: number;
+  role_text: string;
+  status: number;
+  status_text: string;
+  created_at: string;
+}
+
+// 操作日志
+export interface OperationLog {
+  id: number;
+  admin_id: number;
+  admin_name: string;
+  module: string;
+  action: string;
+  resource_id: number;
+  detail: string;
+  ip: string;
+  created_at: string;
+}
+
 // 权限
 export interface Permission {
   id: number;

@@ -4,6 +4,9 @@ import type {
   OnlineListResponse,
   Role,
   Permission,
+  Staff,
+  OperationLog,
+  PageResponse,
 } from '../types';
 
 // ========== 在线会话管理 ==========
@@ -58,4 +61,38 @@ export const getPermissionList = () => {
 // 设置角色权限
 export const setRolePermissions = (id: number, permissionIDs: number[]) => {
   return request.put<ApiResponse<any>>(`/roles/${id}/permissions`, { permission_ids: permissionIDs });
+};
+
+// ========== 员工账号管理 ==========
+
+// 员工列表
+export const getStaffList = () => {
+  return request.get<ApiResponse<Staff[]>>('/admin/staff');
+};
+
+// 创建员工
+export const createStaff = (data: { username: string; password: string; nickname?: string; role?: number }) => {
+  return request.post<ApiResponse<any>>('/admin/staff', data);
+};
+
+// 编辑员工
+export const updateStaff = (id: number, data: { nickname?: string; role?: number; status?: number }) => {
+  return request.put<ApiResponse<any>>(`/admin/staff/${id}`, data);
+};
+
+// 删除员工（停用）
+export const deleteStaff = (id: number) => {
+  return request.delete<ApiResponse<any>>(`/admin/staff/${id}`);
+};
+
+// 重置密码
+export const resetStaffPassword = (id: number, password: string) => {
+  return request.put<ApiResponse<any>>(`/admin/staff/${id}/password`, { password });
+};
+
+// ========== 操作日志 ==========
+
+// 操作日志列表
+export const getOperationLogs = (params?: { page?: number; page_size?: number; module?: string }) => {
+  return request.get<ApiResponse<PageResponse<OperationLog>>>('/admin/operation-logs', { params });
 };

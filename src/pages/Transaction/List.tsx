@@ -12,15 +12,21 @@ export default function TransactionList() {
   const [showRechargeModal, setShowRechargeModal] = useState(false);
   const [rechargeData, setRechargeData] = useState({ member_id: 0, amount: 0, remark: '' });
   const [exporting, setExporting] = useState(false);
+  const [txType, setTxType] = useState<number | ''>('');
+  const [startDate, setStartDate] = useState('');
+  const [endDate, setEndDate] = useState('');
 
   useEffect(() => {
     fetchTransactions();
-  }, [page]);
+  }, [page, txType, startDate, endDate]);
 
   const fetchTransactions = async () => {
     setLoading(true);
     try {
       const params: TransactionQuery = { page, page_size: pageSize };
+      if (txType !== '') params.tx_type = txType;
+      if (startDate) params.start_date = startDate;
+      if (endDate) params.end_date = endDate;
       const response = await getTransactionList(params);
       setTransactions(response.data.data.list);
       setTotal(response.data.data.total);
@@ -85,6 +91,23 @@ export default function TransactionList() {
 
       {/* 交易列表 */}
       <div className="card overflow-hidden">
+        {/* 筛选栏 */}
+        <div className="px-6 py-4 border-b border-[#e8ecf1] dark:border-gray-700/60 flex items-center gap-3 flex-wrap">
+          <select value={txType} onChange={(e) => { setTxType(e.target.value === '' ? '' : Number(e.target.value)); setPage(1); }} className="input !h-9 !w-auto text-[13px]">
+            <option value="">全部类型</option>
+            <option value={1}>充值</option>
+            <option value={2}>消费</option>
+            <option value={3}>退款</option>
+          </select>
+          <div className="flex items-center gap-2">
+            <input type="date" value={startDate} onChange={(e) => { setStartDate(e.target.value); setPage(1); }} className="input !h-9 !w-auto text-[13px]" />
+            <span className="text-[#94a3b8] text-sm">至</span>
+            <input type="date" value={endDate} onChange={(e) => { setEndDate(e.target.value); setPage(1); }} className="input !h-9 !w-auto text-[13px]" />
+          </div>
+          {(txType !== '' || startDate || endDate) && (
+            <button onClick={() => { setTxType(''); setStartDate(''); setEndDate(''); setPage(1); }} className="link-btn">清除筛选</button>
+          )}
+        </div>
         <table className="table">
           <thead>
             <tr>

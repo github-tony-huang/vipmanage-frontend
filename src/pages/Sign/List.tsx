@@ -12,15 +12,19 @@ export default function SignList() {
   const [signResult, setSignResult] = useState<any>(null);
   const [signError, setSignError] = useState('');
   const [signing, setSigning] = useState(false);
+  const [startDate, setStartDate] = useState('');
+  const [endDate, setEndDate] = useState('');
 
   useEffect(() => {
     fetchSigns();
-  }, [page]);
+  }, [page, startDate, endDate]);
 
   const fetchSigns = async () => {
     setLoading(true);
     try {
       const params: SignQuery = { page, page_size: pageSize };
+      if (startDate) params.start_date = startDate;
+      if (endDate) params.end_date = endDate;
       const response = await getSignList(params);
       setSigns(response.data.data.list);
       setTotal(response.data.data.total);
@@ -106,8 +110,16 @@ export default function SignList() {
 
       {/* 签到记录 */}
       <div className="card overflow-hidden">
-        <div className="px-6 py-4 border-b border-[#e8ecf1] dark:border-gray-700/60">
+        <div className="px-6 py-4 border-b border-[#e8ecf1] dark:border-gray-700/60 flex items-center justify-between flex-wrap gap-3">
           <h2 className="text-[15.5px] font-semibold text-[#1a2233] dark:text-white">签到记录</h2>
+          <div className="flex items-center gap-2">
+            <input type="date" value={startDate} onChange={(e) => { setStartDate(e.target.value); setPage(1); }} className="input !h-9 !w-auto text-[13px]" />
+            <span className="text-[#94a3b8] text-sm">至</span>
+            <input type="date" value={endDate} onChange={(e) => { setEndDate(e.target.value); setPage(1); }} className="input !h-9 !w-auto text-[13px]" />
+            {(startDate || endDate) && (
+              <button onClick={() => { setStartDate(''); setEndDate(''); setPage(1); }} className="link-btn">清除</button>
+            )}
+          </div>
         </div>
         <table className="table">
           <thead>

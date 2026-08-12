@@ -86,3 +86,13 @@ export const unfreezeMemberCard = (id: number) => {
 export const refundMemberCard = (id: number, reason?: string) => {
   return request.post<ApiResponse<any>>(`/member-cards/${id}/refund`, { reason });
 };
+
+// 续卡
+export const renewMemberCard = (id: number, days: number) => {
+  return request.post<ApiResponse<any>>(`/member-cards/${id}/renew`, { days });
+};
+
+// 转卡
+export const transferMemberCard = (id: number, targetMemberId: number) => {
+  return request.post<ApiResponse<any>>(`/member-cards/${id}/transfer`, { target_member_id: targetMemberId });
+};

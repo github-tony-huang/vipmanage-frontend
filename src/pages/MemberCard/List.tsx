@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
-import { getMemberCardList, freezeMemberCard, unfreezeMemberCard, refundMemberCard } from '../../api/card';
+import { getMemberCardList, freezeMemberCard, unfreezeMemberCard, refundMemberCard, renewMemberCard, transferMemberCard } from '../../api/card';
 import type { MemberCard, MemberCardQuery } from '../../types';
 
 export default function MemberCardList() {
@@ -10,6 +10,10 @@ export default function MemberCardList() {
   const [pageSize] = useState(20);
   const [loading, setLoading] = useState(false);
   const [searchMemberId, setSearchMemberId] = useState('');
+  const [renewTarget, setRenewTarget] = useState<MemberCard | null>(null);
+  const [renewDays, setRenewDays] = useState(30);
+  const [transferTarget, setTransferTarget] = useState<MemberCard | null>(null);
+  const [transferMemberId, setTransferMemberId] = useState('');
 
   useEffect(() => {
     fetchCards();
@@ -39,6 +43,32 @@ export default function MemberCardList() {
   const handleRefund = async (id: number) => {
     if (!confirm('确定要退卡吗？')) return;
     try { await refundMemberCard(id, '管理员操作退卡'); fetchCards(); } catch (err: any) { alert(err.message || '操作失败'); }
+  };
+
+  const handleRenew = async () => {
+    if (!renewTarget) return;
+    try {
+      await renewMemberCard(renewTarget.id, renewDays);
+      setRenewTarget(null);
+      setRenewDays(30);
+      fetchCards();
+    } catch (err: any) {
+      alert(err.message || '续卡失败');
+    }
+  };
+
+  const handleTransfer = async () => {
+    if (!transferTarget) return;
+    const targetId = Number(transferMemberId);
+    if (!targetId) { alert('请输入目标会员ID'); return; }
+    try {
+      await transferMemberCard(transferTarget.id, targetId);
+      setTransferTarget(null);
+      setTransferMemberId('');
+      fetchCards();
+    } catch (err: any) {
+      alert(err.message || '转卡失败');
+    }
   };
 
   const getStatusBadge = (status: number) => {
@@ -125,6 +155,12 @@ export default function MemberCardList() {
                       {card.status === 2 && (
                         <button onClick={() => handleUnfreeze(card.id)} className="link-btn success">解冻</button>
                       )}
+                      {card.status !== 5 && (
+                        <>
+                          <button onClick={() => { setRenewTarget(card); setRenewDays(30); }} className="link-btn">续卡</button>
+                          <button onClick={() => { setTransferTarget(card); setTransferMemberId(''); }} className="link-btn">转卡</button>
+                        </>
+                      )}
                     </div>
                   </td>
                 </tr>
@@ -143,6 +179,47 @@ export default function MemberCardList() {
           </div>
         )}
       </div>
+
+      {/* 续卡弹窗 */}
+      {renewTarget && (
+        <div className="modal-mask" onClick={() => setRenewTarget(null)}>
+          <div className="modal-card" onClick={(e) => e.stopPropagation()}>
+            <h2 className="text-lg font-semibold text-[#1a2233] dark:text-white mb-2">续卡</h2>
+            <p className="text-sm text-[#94a3b8] mb-4">卡号 {renewTarget.card_no} · 当前到期 {renewTarget.expire_date || '无'}</p>
+            <div>
+              <label className="label">续期天数 <span className="text-red-500">*</span></label>
+              <input type="number" value={renewDays} onChange={(e) => setRenewDays(Number(e.target.value))} className="input" min={1} />
+              <div className="flex gap-2 mt-2">
+                {[30, 90, 180, 365].map(d => (
+                  <button key={d} onClick={() => setRenewDays(d)} className="btn btn-secondary btn-sm">{d}天</button>
+                ))}
+              </div>
+            </div>
+            <div className="flex justify-end gap-3 mt-6">
+              <button onClick={() => setRenewTarget(null)} className="btn btn-secondary">取消</button>
+              <button onClick={handleRenew} className="btn btn-primary">确认续卡</button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* 转卡弹窗 */}
+      {transferTarget && (
+        <div className="modal-mask" onClick={() => setTransferTarget(null)}>
+          <div className="modal-card" onClick={(e) => e.stopPropagation()}>
+            <h2 className="text-lg font-semibold text-[#1a2233] dark:text-white mb-2">转卡</h2>
+            <p className="text-sm text-[#94a3b8] mb-4">卡号 {transferTarget.card_no} · 当前会员 {transferTarget.member?.name || '-'}</p>
+            <div>
+              <label className="label">目标会员 ID <span className="text-red-500">*</span></label>
+              <input type="number" value={transferMemberId} onChange={(e) => setTransferMemberId(e.target.value)} className="input" placeholder="请输入目标会员 ID" />
+            </div>
+            <div className="flex justify-end gap-3 mt-6">
+              <button onClick={() => setTransferTarget(null)} className="btn btn-secondary">取消</button>
+              <button onClick={handleTransfer} className="btn btn-primary">确认转卡</button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
