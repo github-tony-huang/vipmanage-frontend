@@ -41,59 +41,61 @@ export default function TransactionList() {
   };
 
   const getTypeBadge = (type: number) => {
-    const styles: Record<number, string> = {
-      1: 'bg-green-100 text-green-700',
-      2: 'bg-red-100 text-red-700',
-      3: 'bg-orange-100 text-orange-700',
+    const map: Record<number, { cls: string; text: string }> = {
+      1: { cls: 'badge badge-success', text: '充值' },
+      2: { cls: 'badge badge-danger', text: '消费' },
+      3: { cls: 'badge badge-warning', text: '退款' },
     };
-    const texts: Record<number, string> = {
-      1: '充值', 2: '消费', 3: '退款'
-    };
-    return (
-      <span className={`px-2 py-1 text-xs rounded-full ${styles[type] || ''}`}>
-        {texts[type] || '未知'}
-      </span>
-    );
+    const item = map[type] || map[1];
+    return <span className={item.cls}><span className="dot"></span>{item.text}</span>;
   };
 
   return (
-    <div>
-      <div className="flex justify-between items-center mb-6">
-        <h1 className="text-2xl font-bold text-gray-900 dark:text-white">交易记录</h1>
-        <button
-          onClick={() => setShowRechargeModal(true)}
-          className="px-4 py-2 bg-green-600 hover:bg-green-700 text-white rounded-lg"
-        >
+    <div className="space-y-5">
+      {/* 页头 */}
+      <div className="flex items-center justify-between">
+        <div>
+          <h1 className="page-title">交易记录</h1>
+          <p className="page-desc">共 {total} 笔交易</p>
+        </div>
+        <button onClick={() => setShowRechargeModal(true)} className="btn btn-success">
+          <svg className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" d="M12 4v16m8-8H4" /></svg>
           充值
         </button>
       </div>
 
-      <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm overflow-hidden">
-        <table className="w-full">
-          <thead className="bg-gray-50 dark:bg-gray-700">
+      {/* 交易列表 */}
+      <div className="card overflow-hidden">
+        <table className="table">
+          <thead>
             <tr>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">会员</th>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">类型</th>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">金额</th>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">备注</th>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">时间</th>
+              <th>会员</th>
+              <th>类型</th>
+              <th>金额</th>
+              <th>备注</th>
+              <th>时间</th>
             </tr>
           </thead>
-          <tbody className="divide-y divide-gray-200 dark:divide-gray-700">
+          <tbody>
             {loading ? (
-              <tr><td colSpan={5} className="px-6 py-12 text-center">加载中...</td></tr>
+              <tr><td colSpan={5} className="!py-16 text-center text-gray-400">加载中...</td></tr>
             ) : transactions.length === 0 ? (
-              <tr><td colSpan={5} className="px-6 py-12 text-center">暂无数据</td></tr>
+              <tr>
+                <td colSpan={5} className="!py-16 text-center text-gray-400">
+                  <svg className="w-10 h-10 mx-auto mb-2 empty-icon" fill="none" stroke="currentColor" strokeWidth={1.5} viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" d="M9 8h6m-5 0a3 3 0 110 6H9l3 3m-3-6h6m6 1a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
+                  暂无交易记录
+                </td>
+              </tr>
             ) : (
               transactions.map((tx) => (
-                <tr key={tx.id} className="hover:bg-gray-50 dark:hover:bg-gray-700">
-                  <td className="px-6 py-4">{tx.member?.name || '-'}</td>
-                  <td className="px-6 py-4">{getTypeBadge(tx.tx_type)}</td>
-                  <td className={`px-6 py-4 font-medium ${tx.tx_type === 1 ? 'text-green-600' : 'text-red-600'}`}>
-                    {tx.tx_type === 1 ? '+' : '-'}{tx.amount}
+                <tr key={tx.id}>
+                  <td className="font-medium">{tx.member?.name || '-'}</td>
+                  <td>{getTypeBadge(tx.tx_type)}</td>
+                  <td className={`font-semibold ${tx.tx_type === 1 ? 'text-emerald-600 dark:text-emerald-400' : 'text-red-600 dark:text-red-400'}`}>
+                    {tx.tx_type === 1 ? '+' : '-'}¥{tx.amount}
                   </td>
-                  <td className="px-6 py-4 text-gray-500">{tx.remark || '-'}</td>
-                  <td className="px-6 py-4 text-gray-500">{tx.created_at}</td>
+                  <td className="text-gray-500 dark:text-gray-400">{tx.remark || '-'}</td>
+                  <td className="text-gray-500 dark:text-gray-400 text-[13px]">{tx.created_at}</td>
                 </tr>
               ))
             )}
@@ -101,55 +103,38 @@ export default function TransactionList() {
         </table>
 
         {total > pageSize && (
-          <div className="px-6 py-4 flex justify-between items-center border-t border-gray-200 dark:border-gray-700">
-            <span className="text-sm text-gray-500">共 {total} 条记录</span>
+          <div className="px-5 py-3.5 flex justify-between items-center border-t border-[#e8ecf1] dark:border-gray-700/60">
+            <span className="text-[13px] text-gray-400">共 {total} 条 · 第 {page} / {Math.ceil(total / pageSize)} 页</span>
             <div className="flex gap-2">
-              <button onClick={() => setPage(page - 1)} disabled={page === 1} className="px-3 py-1 border rounded disabled:opacity-50">上一页</button>
-              <button onClick={() => setPage(page + 1)} disabled={page * pageSize >= total} className="px-3 py-1 border rounded disabled:opacity-50">下一页</button>
+              <button onClick={() => setPage(page - 1)} disabled={page === 1} className="btn btn-secondary btn-sm">上一页</button>
+              <button onClick={() => setPage(page + 1)} disabled={page * pageSize >= total} className="btn btn-secondary btn-sm">下一页</button>
             </div>
           </div>
         )}
       </div>
 
+      {/* 充值弹窗 */}
       {showRechargeModal && (
-        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
-          <div className="bg-white dark:bg-gray-800 rounded-xl p-6 w-full max-w-md">
-            <h2 className="text-xl font-bold text-gray-900 dark:text-white mb-4">会员充值</h2>
+        <div className="modal-mask" onClick={() => setShowRechargeModal(false)}>
+          <div className="modal-card" onClick={(e) => e.stopPropagation()}>
+            <h2 className="text-lg font-semibold text-[#1a2233] dark:text-white mb-5">会员充值</h2>
             <div className="space-y-4">
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">会员ID</label>
-                <input
-                  type="number"
-                  value={rechargeData.member_id}
-                  onChange={(e) => setRechargeData({ ...rechargeData, member_id: Number(e.target.value) })}
-                  className="w-full px-4 py-2 border rounded-lg"
-                  required
-                />
+                <label className="label">会员 ID <span className="text-red-500">*</span></label>
+                <input type="number" value={rechargeData.member_id || ''} onChange={(e) => setRechargeData({ ...rechargeData, member_id: Number(e.target.value) })} className="input" placeholder="请输入会员 ID" />
               </div>
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">充值金额</label>
-                <input
-                  type="number"
-                  step="0.01"
-                  value={rechargeData.amount}
-                  onChange={(e) => setRechargeData({ ...rechargeData, amount: Number(e.target.value) })}
-                  className="w-full px-4 py-2 border rounded-lg"
-                  required
-                />
+                <label className="label">充值金额（元） <span className="text-red-500">*</span></label>
+                <input type="number" step="0.01" value={rechargeData.amount || ''} onChange={(e) => setRechargeData({ ...rechargeData, amount: Number(e.target.value) })} className="input" placeholder="0.00" />
               </div>
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">备注</label>
-                <input
-                  type="text"
-                  value={rechargeData.remark}
-                  onChange={(e) => setRechargeData({ ...rechargeData, remark: e.target.value })}
-                  className="w-full px-4 py-2 border rounded-lg"
-                />
+                <label className="label">备注</label>
+                <input type="text" value={rechargeData.remark} onChange={(e) => setRechargeData({ ...rechargeData, remark: e.target.value })} className="input" placeholder="选填" />
               </div>
             </div>
             <div className="flex justify-end gap-3 mt-6">
-              <button onClick={() => setShowRechargeModal(false)} className="px-4 py-2 border rounded-lg">取消</button>
-              <button onClick={handleRecharge} className="px-4 py-2 bg-green-600 text-white rounded-lg">确认充值</button>
+              <button onClick={() => setShowRechargeModal(false)} className="btn btn-secondary">取消</button>
+              <button onClick={handleRecharge} className="btn btn-success">确认充值</button>
             </div>
           </div>
         </div>

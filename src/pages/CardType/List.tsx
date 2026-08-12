@@ -77,74 +77,69 @@ export default function CardTypeList() {
 
   const resetForm = () => {
     setEditingId(null);
-    setFormData({
-      name: '',
-      card_type: 1,
-      valid_days: 30,
-      valid_count: 0,
-      price: 0,
-      description: '',
-    });
-  };
-
-  const getStatusBadge = (status: number) => {
-    return status === 1 ? (
-      <span className="px-2 py-1 text-xs rounded-full bg-green-100 text-green-700">正常</span>
-    ) : (
-      <span className="px-2 py-1 text-xs rounded-full bg-gray-100 text-gray-700">停用</span>
-    );
-  };
-
-  const getCardTypeBadge = (type: number) => {
-    return type === 1 ? (
-      <span className="px-2 py-1 text-xs rounded-full bg-blue-100 text-blue-700">期限卡</span>
-    ) : (
-      <span className="px-2 py-1 text-xs rounded-full bg-purple-100 text-purple-700">次数卡</span>
-    );
+    setFormData({ name: '', card_type: 1, valid_days: 30, valid_count: 0, price: 0, description: '' });
   };
 
   return (
-    <div>
-      <div className="flex justify-between items-center mb-6">
-        <h1 className="text-2xl font-bold text-gray-900 dark:text-white">卡种管理</h1>
-        <button
-          onClick={() => { resetForm(); setShowModal(true); }}
-          className="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg transition-colors"
-        >
+    <div className="space-y-5">
+      {/* 页头 */}
+      <div className="flex items-center justify-between">
+        <div>
+          <h1 className="page-title">卡种管理</h1>
+          <p className="page-desc">共 {cardTypes.length} 种卡</p>
+        </div>
+        <button onClick={() => { resetForm(); setShowModal(true); }} className="btn btn-primary">
+          <svg className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" d="M12 4v16m8-8H4" /></svg>
           添加卡种
         </button>
       </div>
 
-      <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm overflow-hidden">
-        <table className="w-full">
-          <thead className="bg-gray-50 dark:bg-gray-700">
+      {/* 卡种列表 */}
+      <div className="card overflow-hidden">
+        <table className="table">
+          <thead>
             <tr>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">名称</th>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">类型</th>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">有效期</th>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">价格</th>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">状态</th>
-              <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase">操作</th>
+              <th>名称</th>
+              <th>类型</th>
+              <th>有效期 / 次数</th>
+              <th>价格</th>
+              <th>状态</th>
+              <th className="text-right">操作</th>
             </tr>
           </thead>
-          <tbody className="divide-y divide-gray-200 dark:divide-gray-700">
+          <tbody>
             {loading ? (
-              <tr><td colSpan={6} className="px-6 py-12 text-center">加载中...</td></tr>
+              <tr><td colSpan={6} className="!py-16 text-center text-gray-400">加载中...</td></tr>
             ) : cardTypes.length === 0 ? (
-              <tr><td colSpan={6} className="px-6 py-12 text-center">暂无数据</td></tr>
+              <tr>
+                <td colSpan={6} className="!py-16 text-center text-gray-400">
+                  <svg className="w-10 h-10 mx-auto mb-2 empty-icon" fill="none" stroke="currentColor" strokeWidth={1.5} viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" d="M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z" /></svg>
+                  暂无卡种
+                </td>
+              </tr>
             ) : (
               cardTypes.map((ct) => (
-                <tr key={ct.id} className="hover:bg-gray-50 dark:hover:bg-gray-700">
-                  <td className="px-6 py-4 font-medium text-gray-900 dark:text-white">{ct.name}</td>
-                  <td className="px-6 py-4">{getCardTypeBadge(ct.card_type)}</td>
-                  <td className="px-6 py-4 text-gray-500">
-                    {ct.card_type === 1 ? `${ct.valid_days}天` : `${ct.valid_count}次`}
+                <tr key={ct.id}>
+                  <td className="font-medium">{ct.name}</td>
+                  <td>
+                    {ct.card_type === 1
+                      ? <span className="badge badge-info">期限卡</span>
+                      : <span className="badge" style={{ background: '#f3e8ff', color: '#7e22ce' }}>次数卡</span>}
                   </td>
-                  <td className="px-6 py-4 text-gray-900 dark:text-white">¥{ct.price}</td>
-                  <td className="px-6 py-4">{getStatusBadge(ct.status)}</td>
-                  <td className="px-6 py-4 text-right space-x-2">
-                    <button onClick={() => handleEdit(ct)} className="text-blue-600 hover:text-blue-800">编辑</button>
-                    <button onClick={() => handleDelete(ct.id)} className="text-red-600 hover:text-red-800">删除</button>
+                  <td className="text-gray-600 dark:text-gray-300">
+                    {ct.card_type === 1 ? `${ct.valid_days} 天` : `${ct.valid_count} 次`}
+                  </td>
+                  <td className="font-semibold text-gray-900 dark:text-white">¥{ct.price}</td>
+                  <td>
+                    {ct.status === 1
+                      ? <span className="badge badge-success"><span className="dot"></span>正常</span>
+                      : <span className="badge badge-muted"><span className="dot"></span>停用</span>}
+                  </td>
+                  <td>
+                    <div className="flex items-center justify-end gap-3">
+                      <button onClick={() => handleEdit(ct)} className="link-btn">编辑</button>
+                      <button onClick={() => handleDelete(ct.id)} className="link-btn danger">删除</button>
+                    </div>
                   </td>
                 </tr>
               ))
@@ -153,79 +148,48 @@ export default function CardTypeList() {
         </table>
       </div>
 
+      {/* 弹窗 */}
       {showModal && (
-        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
-          <div className="bg-white dark:bg-gray-800 rounded-xl p-6 w-full max-w-md">
-            <h2 className="text-xl font-bold text-gray-900 dark:text-white mb-4">
+        <div className="modal-mask" onClick={() => { setShowModal(false); resetForm(); }}>
+          <div className="modal-card" onClick={(e) => e.stopPropagation()}>
+            <h2 className="text-lg font-semibold text-[#1a2233] dark:text-white mb-5">
               {editingId ? '编辑卡种' : '添加卡种'}
             </h2>
             <div className="space-y-4">
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">名称</label>
-                <input
-                  type="text"
-                  value={formData.name}
-                  onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-                  className="w-full px-4 py-2 border rounded-lg"
-                  required
-                />
+                <label className="label">名称 <span className="text-red-500">*</span></label>
+                <input type="text" value={formData.name} onChange={(e) => setFormData({ ...formData, name: e.target.value })} className="input" placeholder="如：月卡 / 30次卡" />
               </div>
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">类型</label>
-                <select
-                  value={formData.card_type}
-                  onChange={(e) => setFormData({ ...formData, card_type: Number(e.target.value) })}
-                  className="w-full px-4 py-2 border rounded-lg"
-                >
-                  <option value={1}>期限卡</option>
-                  <option value={2}>次数卡</option>
+                <label className="label">类型</label>
+                <select value={formData.card_type} onChange={(e) => setFormData({ ...formData, card_type: Number(e.target.value) })} className="input">
+                  <option value={1}>期限卡（按天数）</option>
+                  <option value={2}>次数卡（按次数）</option>
                 </select>
               </div>
               {formData.card_type === 1 ? (
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">有效期（天）</label>
-                  <input
-                    type="number"
-                    value={formData.valid_days}
-                    onChange={(e) => setFormData({ ...formData, valid_days: Number(e.target.value) })}
-                    className="w-full px-4 py-2 border rounded-lg"
-                  />
+                  <label className="label">有效期（天）</label>
+                  <input type="number" value={formData.valid_days} onChange={(e) => setFormData({ ...formData, valid_days: Number(e.target.value) })} className="input" />
                 </div>
               ) : (
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">可用次数</label>
-                  <input
-                    type="number"
-                    value={formData.valid_count}
-                    onChange={(e) => setFormData({ ...formData, valid_count: Number(e.target.value) })}
-                    className="w-full px-4 py-2 border rounded-lg"
-                  />
+                  <label className="label">可用次数</label>
+                  <input type="number" value={formData.valid_count} onChange={(e) => setFormData({ ...formData, valid_count: Number(e.target.value) })} className="input" />
                 </div>
               )}
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">价格</label>
-                <input
-                  type="number"
-                  step="0.01"
-                  value={formData.price}
-                  onChange={(e) => setFormData({ ...formData, price: Number(e.target.value) })}
-                  className="w-full px-4 py-2 border rounded-lg"
-                  required
-                />
+                <label className="label">价格（元） <span className="text-red-500">*</span></label>
+                <input type="number" step="0.01" value={formData.price} onChange={(e) => setFormData({ ...formData, price: Number(e.target.value) })} className="input" />
               </div>
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">描述</label>
-                <textarea
-                  value={formData.description}
-                  onChange={(e) => setFormData({ ...formData, description: e.target.value })}
-                  className="w-full px-4 py-2 border rounded-lg"
-                  rows={3}
-                />
+                <label className="label">描述</label>
+                <textarea value={formData.description} onChange={(e) => setFormData({ ...formData, description: e.target.value })} className="input" rows={3} placeholder="选填" />
               </div>
             </div>
             <div className="flex justify-end gap-3 mt-6">
-              <button onClick={() => { setShowModal(false); resetForm(); }} className="px-4 py-2 border rounded-lg">取消</button>
-              <button onClick={handleSubmit} className="px-4 py-2 bg-blue-600 text-white rounded-lg">保存</button>
+              <button onClick={() => { setShowModal(false); resetForm(); }} className="btn btn-secondary">取消</button>
+              <button onClick={handleSubmit} className="btn btn-primary">保存</button>
             </div>
           </div>
         </div>

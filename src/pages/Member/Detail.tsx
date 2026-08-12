@@ -17,9 +17,7 @@ export default function MemberDetail() {
   const [issueData, setIssueData] = useState({ card_type_id: 0, buy_price: 0 });
 
   useEffect(() => {
-    if (id) {
-      fetchMember();
-    }
+    if (id) fetchMember();
   }, [id]);
 
   useEffect(() => {
@@ -71,137 +69,129 @@ export default function MemberDetail() {
     }
   };
 
+  const getStatusBadge = (status: number, text?: string) => {
+    const map: Record<number, { cls: string; text: string }> = {
+      1: { cls: 'badge badge-success', text: '正常' },
+      2: { cls: 'badge badge-danger', text: '冻结' },
+      3: { cls: 'badge badge-warning', text: '已用完' },
+      4: { cls: 'badge badge-warning', text: '已过期' },
+      5: { cls: 'badge badge-muted', text: '已退卡' },
+    };
+    const item = map[status] || map[1];
+    return <span className={item.cls}><span className="dot"></span>{text || item.text}</span>;
+  };
+
   if (loading) {
-    return <div className="text-center py-12">加载中...</div>;
+    return <div className="text-center py-20 text-gray-400">加载中...</div>;
   }
 
   if (!member) {
-    return <div className="text-center py-12">会员不存在</div>;
+    return <div className="text-center py-20 text-gray-400">会员不存在</div>;
   }
 
   return (
-    <div>
-      <div className="flex items-center mb-6">
-        <button onClick={() => navigate('/members')} className="mr-4 text-gray-500 hover:text-gray-700">
-          ← 返回
+    <div className="space-y-5">
+      {/* 页头 */}
+      <div className="flex items-center gap-4">
+        <button
+          onClick={() => navigate('/members')}
+          className="w-9 h-9 flex items-center justify-center rounded-[9px] border border-[#dbe1e8] dark:border-gray-600 text-[#4a5568] dark:text-gray-300 hover:border-[#3b5bfd] hover:text-[#3b5bfd] dark:hover:text-blue-400 transition-colors"
+          title="返回"
+        >
+          <svg className="w-[18px] h-[18px]" fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" d="M10 19l-7-7m0 0l7-7m-7 7h18" />
+          </svg>
         </button>
-        <h1 className="text-2xl font-bold text-gray-900 dark:text-white">会员详情</h1>
+        <div>
+          <h1 className="page-title">会员详情</h1>
+          <p className="page-desc">{member.name} · {member.phone}</p>
+        </div>
       </div>
 
       {/* 基本信息 */}
-      <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm p-6 mb-6">
-        <div className="flex justify-between items-center mb-4">
-          <h2 className="text-lg font-semibold text-gray-900 dark:text-white">基本信息</h2>
+      <div className="card p-6">
+        <div className="flex justify-between items-center mb-5">
+          <h2 className="text-[15.5px] font-semibold text-[#1a2233] dark:text-white">基本信息</h2>
           {!editing ? (
-            <button onClick={() => setEditing(true)} className="text-blue-600 hover:text-blue-800">
-              编辑
-            </button>
+            <button onClick={() => setEditing(true)} className="link-btn">编辑</button>
           ) : (
-            <div className="space-x-2">
-              <button onClick={() => setEditing(false)} className="px-3 py-1 border border-gray-300 rounded">取消</button>
-              <button onClick={handleUpdate} className="px-3 py-1 bg-blue-600 text-white rounded">保存</button>
+            <div className="flex gap-2">
+              <button onClick={() => setEditing(false)} className="btn btn-secondary btn-sm">取消</button>
+              <button onClick={handleUpdate} className="btn btn-primary btn-sm">保存</button>
             </div>
           )}
         </div>
 
-        <div className="grid grid-cols-2 gap-4">
+        <div className="grid grid-cols-2 md:grid-cols-3 gap-x-6 gap-y-5">
           <div>
-            <label className="text-sm text-gray-500 dark:text-gray-400">姓名</label>
+            <label className="text-[13px] text-[#94a3b8] dark:text-gray-400">姓名</label>
             {editing ? (
-              <input
-                type="text"
-                value={formData.name}
-                onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-                className="w-full mt-1 px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700"
-              />
+              <input type="text" value={formData.name} onChange={(e) => setFormData({ ...formData, name: e.target.value })} className="input mt-1.5" />
             ) : (
-              <p className="text-gray-900 dark:text-white mt-1">{member.name}</p>
+              <p className="text-[#1a2233] dark:text-white font-medium mt-1">{member.name}</p>
             )}
           </div>
           <div>
-            <label className="text-sm text-gray-500 dark:text-gray-400">手机号</label>
+            <label className="text-[13px] text-[#94a3b8] dark:text-gray-400">手机号</label>
             {editing ? (
-              <input
-                type="text"
-                value={formData.phone}
-                onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
-                className="w-full mt-1 px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700"
-              />
+              <input type="text" value={formData.phone} onChange={(e) => setFormData({ ...formData, phone: e.target.value })} className="input mt-1.5" />
             ) : (
-              <p className="text-gray-900 dark:text-white mt-1">{member.phone}</p>
+              <p className="text-[#1a2233] dark:text-white font-medium mt-1">{member.phone}</p>
             )}
           </div>
           <div>
-            <label className="text-sm text-gray-500 dark:text-gray-400">性别</label>
+            <label className="text-[13px] text-[#94a3b8] dark:text-gray-400">性别</label>
             {editing ? (
-              <select
-                value={formData.gender}
-                onChange={(e) => setFormData({ ...formData, gender: Number(e.target.value) })}
-                className="w-full mt-1 px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700"
-              >
+              <select value={formData.gender} onChange={(e) => setFormData({ ...formData, gender: Number(e.target.value) })} className="input mt-1.5">
                 <option value={0}>未知</option>
                 <option value={1}>男</option>
                 <option value={2}>女</option>
               </select>
             ) : (
-              <p className="text-gray-900 dark:text-white mt-1">
-                {member.gender === 1 ? '男' : member.gender === 2 ? '女' : '未知'}
-              </p>
+              <p className="text-[#1a2233] dark:text-white font-medium mt-1">{member.gender === 1 ? '男' : member.gender === 2 ? '女' : '未知'}</p>
             )}
           </div>
           <div>
-            <label className="text-sm text-gray-500 dark:text-gray-400">状态</label>
-            <p className="text-gray-900 dark:text-white mt-1">
-              <span className={`px-2 py-1 text-xs rounded-full ${
-                member.status === 1 ? 'bg-green-100 text-green-700' :
-                member.status === 2 ? 'bg-red-100 text-red-700' : 'bg-gray-100 text-gray-700'
-              }`}>
-                {member.status === 1 ? '正常' : member.status === 2 ? '冻结' : '已删除'}
-              </span>
-            </p>
+            <label className="text-[13px] text-[#94a3b8] dark:text-gray-400">状态</label>
+            <p className="mt-1">{getStatusBadge(member.status, member.status_text)}</p>
           </div>
           <div>
-            <label className="text-sm text-gray-500 dark:text-gray-400">注册时间</label>
-            <p className="text-gray-900 dark:text-white mt-1">{member.created_at}</p>
+            <label className="text-[13px] text-[#94a3b8] dark:text-gray-400">注册时间</label>
+            <p className="text-[#1a2233] dark:text-white font-medium mt-1 text-[13.5px]">{member.created_at}</p>
           </div>
         </div>
       </div>
 
       {/* 会员卡 */}
-      <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm p-6">
-        <div className="flex justify-between items-center mb-4">
-          <h2 className="text-lg font-semibold text-gray-900 dark:text-white">会员卡</h2>
-          <button
-            onClick={() => setShowIssueModal(true)}
-            className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700"
-          >
+      <div className="card p-6">
+        <div className="flex justify-between items-center mb-5">
+          <h2 className="text-[15.5px] font-semibold text-[#1a2233] dark:text-white">会员卡</h2>
+          <button onClick={() => setShowIssueModal(true)} className="btn btn-primary btn-sm">
+            <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" d="M12 4v16m8-8H4" /></svg>
             发放会员卡
           </button>
         </div>
 
         {member.cards.length === 0 ? (
-          <p className="text-gray-500 text-center py-8">暂无会员卡</p>
+          <div className="text-center py-14 text-gray-400">
+            <svg className="w-10 h-10 mx-auto mb-2 empty-icon" fill="none" stroke="currentColor" strokeWidth={1.5} viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" d="M15 5v2m0 4v2m0 4v2M5 5a2 2 0 00-2 2v3a2 2 0 110 4v3a2 2 0 002 2h14a2 2 0 002-2v-3a2 2 0 110-4V7a2 2 0 00-2-2H5z" /></svg>
+            <p className="text-sm">暂无会员卡</p>
+          </div>
         ) : (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
             {member.cards.map((card) => (
-              <div key={card.id} className="border border-gray-200 dark:border-gray-700 rounded-lg p-4">
-                <div className="flex justify-between items-start mb-2">
-                  <span className="font-medium text-gray-900 dark:text-white">{card.card_type_name}</span>
-                  <span className={`px-2 py-1 text-xs rounded-full ${
-                    card.status === 1 ? 'bg-green-100 text-green-700' :
-                    card.status === 2 ? 'bg-red-100 text-red-700' :
-                    card.status === 4 ? 'bg-yellow-100 text-yellow-700' : 'bg-gray-100 text-gray-700'
-                  }`}>
-                    {card.status_text}
-                  </span>
+              <div key={card.id} className="border border-[#e8ecf1] dark:border-gray-600 rounded-xl p-4 hover:shadow-md transition-shadow bg-[#fbfcfd] dark:bg-gray-700/30">
+                <div className="flex justify-between items-start mb-3">
+                  <span className="font-semibold text-[#1a2233] dark:text-white">{card.card_type_name}</span>
+                  {getStatusBadge(card.status, card.status_text)}
                 </div>
-                <p className="text-sm text-gray-500 dark:text-gray-400">卡号：{card.card_no}</p>
-                <p className="text-sm text-gray-500 dark:text-gray-400">
-                  {card.card_type === 1 ? `剩余 ${card.remain_days} 天` : `剩余 ${card.remain_count} 次`}
-                </p>
-                <p className="text-sm text-gray-500 dark:text-gray-400">
-                  有效期至：{card.expire_date || '永久'}
-                </p>
+                <div className="space-y-1.5 text-[13px] text-[#4a5568] dark:text-gray-300">
+                  <p className="font-mono">卡号：{card.card_no}</p>
+                  <p className="font-medium text-[#3b5bfd] dark:text-blue-400">
+                    {card.card_type === 1 ? `剩余 ${card.remain_days} 天` : `剩余 ${card.remain_count} 次`}
+                  </p>
+                  <p className="text-[#94a3b8] dark:text-gray-500">有效期至：{card.expire_date || '永久'}</p>
+                </div>
               </div>
             ))}
           </div>
@@ -210,48 +200,34 @@ export default function MemberDetail() {
 
       {/* 发放会员卡弹窗 */}
       {showIssueModal && (
-        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
-          <div className="bg-white dark:bg-gray-800 rounded-xl p-6 w-full max-w-md">
-            <h2 className="text-xl font-bold text-gray-900 dark:text-white mb-4">发放会员卡</h2>
+        <div className="modal-mask" onClick={() => setShowIssueModal(false)}>
+          <div className="modal-card" onClick={(e) => e.stopPropagation()}>
+            <h2 className="text-lg font-semibold text-[#1a2233] dark:text-white mb-5">发放会员卡</h2>
             <div className="space-y-4">
               <div>
-                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">选择卡种</label>
+                <label className="label">选择卡种 <span className="text-red-500">*</span></label>
                 <select
                   value={issueData.card_type_id}
                   onChange={(e) => {
                     const cardType = cardTypes.find(c => c.id === Number(e.target.value));
-                    setIssueData({
-                      card_type_id: Number(e.target.value),
-                      buy_price: cardType?.price || 0
-                    });
+                    setIssueData({ card_type_id: Number(e.target.value), buy_price: cardType?.price || 0 });
                   }}
-                  className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700"
+                  className="input"
                 >
                   <option value={0}>请选择</option>
                   {cardTypes.map((ct) => (
-                    <option key={ct.id} value={ct.id}>
-                      {ct.name} - ¥{ct.price}
-                    </option>
+                    <option key={ct.id} value={ct.id}>{ct.name} - ¥{ct.price}</option>
                   ))}
                 </select>
               </div>
               <div>
-                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">购买价格</label>
-                <input
-                  type="number"
-                  value={issueData.buy_price}
-                  onChange={(e) => setIssueData({ ...issueData, buy_price: Number(e.target.value) })}
-                  className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700"
-                />
+                <label className="label">购买价格（元） <span className="text-red-500">*</span></label>
+                <input type="number" value={issueData.buy_price} onChange={(e) => setIssueData({ ...issueData, buy_price: Number(e.target.value) })} className="input" />
               </div>
             </div>
             <div className="flex justify-end gap-3 mt-6">
-              <button onClick={() => setShowIssueModal(false)} className="px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg">
-                取消
-              </button>
-              <button onClick={handleIssue} className="px-4 py-2 bg-blue-600 text-white rounded-lg">
-                确认开卡
-              </button>
+              <button onClick={() => setShowIssueModal(false)} className="btn btn-secondary">取消</button>
+              <button onClick={handleIssue} className="btn btn-primary">确认开卡</button>
             </div>
           </div>
         </div>

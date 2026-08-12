@@ -98,7 +98,6 @@ export default function RoleList() {
     }
   };
 
-  // 按模块分组权限
   const groupedPermissions = permissions.reduce<Record<string, Permission[]>>((acc, perm) => {
     if (!acc[perm.module]) acc[perm.module] = [];
     acc[perm.module].push(perm);
@@ -106,63 +105,59 @@ export default function RoleList() {
   }, {});
 
   const moduleNames: Record<string, string> = {
-    member: '会员管理',
-    cardtype: '卡种管理',
-    card: '会员卡管理',
-    sign: '签到管理',
-    transaction: '交易管理',
-    admin: '系统管理',
+    member: '会员管理', cardtype: '卡种管理', card: '会员卡管理',
+    sign: '签到管理', transaction: '交易管理', admin: '系统管理',
   };
 
   return (
-    <div>
-      <div className="flex justify-between items-center mb-6">
-        <h1 className="text-2xl font-bold text-gray-900 dark:text-white">角色权限管理</h1>
-        <button
-          onClick={openCreateRole}
-          className="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg transition-colors"
-        >
+    <div className="space-y-5">
+      {/* 页头 */}
+      <div className="flex items-center justify-between">
+        <div>
+          <h1 className="page-title">角色权限管理</h1>
+          <p className="page-desc">共 {roles.length} 个角色</p>
+        </div>
+        <button onClick={openCreateRole} className="btn btn-primary">
+          <svg className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" d="M12 4v16m8-8H4" /></svg>
           添加角色
         </button>
       </div>
 
-      <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm overflow-hidden">
-        <table className="w-full">
-          <thead className="bg-gray-50 dark:bg-gray-700">
+      {/* 角色列表 */}
+      <div className="card overflow-hidden">
+        <table className="table">
+          <thead>
             <tr>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">角色名称</th>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">编码</th>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">权限数</th>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">备注</th>
-              <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">操作</th>
+              <th>角色名称</th>
+              <th>编码</th>
+              <th>权限数</th>
+              <th>备注</th>
+              <th className="text-right">操作</th>
             </tr>
           </thead>
-          <tbody className="divide-y divide-gray-200 dark:divide-gray-700">
+          <tbody>
             {loading ? (
-              <tr><td colSpan={5} className="px-6 py-12 text-center text-gray-500">加载中...</td></tr>
+              <tr><td colSpan={5} className="!py-16 text-center text-gray-400">加载中...</td></tr>
             ) : roles.length === 0 ? (
-              <tr><td colSpan={5} className="px-6 py-12 text-center text-gray-500">暂无数据</td></tr>
+              <tr>
+                <td colSpan={5} className="!py-16 text-center text-gray-400">
+                  <svg className="w-10 h-10 mx-auto mb-2 empty-icon" fill="none" stroke="currentColor" strokeWidth={1.5} viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" /></svg>
+                  暂无角色
+                </td>
+              </tr>
             ) : (
               roles.map((role) => (
-                <tr key={role.id} className="hover:bg-gray-50 dark:hover:bg-gray-700">
-                  <td className="px-6 py-4 font-medium text-gray-900 dark:text-white">{role.name}</td>
-                  <td className="px-6 py-4 text-gray-500 dark:text-gray-400 font-mono text-sm">{role.code}</td>
-                  <td className="px-6 py-4">
-                    <span className="px-2 py-1 text-xs rounded-full bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400">
-                      {role.permission_ids?.length || 0} 项权限
-                    </span>
-                  </td>
-                  <td className="px-6 py-4 text-gray-500 dark:text-gray-400">{role.remark || '-'}</td>
-                  <td className="px-6 py-4 text-right space-x-3">
-                    <button onClick={() => openPermModal(role)} className="text-green-600 hover:text-green-800 dark:text-green-400 text-sm">
-                      配置权限
-                    </button>
-                    <button onClick={() => openEditRole(role)} className="text-blue-600 hover:text-blue-800 dark:text-blue-400 text-sm">
-                      编辑
-                    </button>
-                    <button onClick={() => handleDeleteRole(role.id)} className="text-red-600 hover:text-red-800 dark:text-red-400 text-sm">
-                      删除
-                    </button>
+                <tr key={role.id}>
+                  <td className="font-medium">{role.name}</td>
+                  <td className="font-mono text-[13px] text-gray-500 dark:text-gray-400">{role.code}</td>
+                  <td><span className="badge badge-info">{role.permission_ids?.length || 0} 项权限</span></td>
+                  <td className="text-gray-500 dark:text-gray-400">{role.remark || '-'}</td>
+                  <td>
+                    <div className="flex items-center justify-end gap-3">
+                      <button onClick={() => openPermModal(role)} className="link-btn success">配置权限</button>
+                      <button onClick={() => openEditRole(role)} className="link-btn">编辑</button>
+                      <button onClick={() => handleDeleteRole(role.id)} className="link-btn danger">删除</button>
+                    </div>
                   </td>
                 </tr>
               ))
@@ -173,49 +168,28 @@ export default function RoleList() {
 
       {/* 角色编辑弹窗 */}
       {showRoleModal && (
-        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
-          <div className="bg-white dark:bg-gray-800 rounded-xl p-6 w-full max-w-md">
-            <h2 className="text-xl font-bold text-gray-900 dark:text-white mb-4">
+        <div className="modal-mask" onClick={() => setShowRoleModal(false)}>
+          <div className="modal-card" onClick={(e) => e.stopPropagation()}>
+            <h2 className="text-lg font-semibold text-[#1a2233] dark:text-white mb-5">
               {editingRole ? '编辑角色' : '添加角色'}
             </h2>
             <div className="space-y-4">
               <div>
-                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">角色名称</label>
-                <input
-                  type="text"
-                  value={roleForm.name}
-                  onChange={(e) => setRoleForm({ ...roleForm, name: e.target.value })}
-                  className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
-                  placeholder="如：店长"
-                />
+                <label className="label">角色名称 <span className="text-red-500">*</span></label>
+                <input type="text" value={roleForm.name} onChange={(e) => setRoleForm({ ...roleForm, name: e.target.value })} className="input" placeholder="如：店长" />
               </div>
               <div>
-                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">角色编码</label>
-                <input
-                  type="text"
-                  value={roleForm.code}
-                  onChange={(e) => setRoleForm({ ...roleForm, code: e.target.value })}
-                  className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white font-mono"
-                  placeholder="如：manager"
-                />
+                <label className="label">角色编码 <span className="text-red-500">*</span></label>
+                <input type="text" value={roleForm.code} onChange={(e) => setRoleForm({ ...roleForm, code: e.target.value })} className="input font-mono" placeholder="如：manager" />
               </div>
               <div>
-                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">备注</label>
-                <input
-                  type="text"
-                  value={roleForm.remark}
-                  onChange={(e) => setRoleForm({ ...roleForm, remark: e.target.value })}
-                  className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
-                />
+                <label className="label">备注</label>
+                <input type="text" value={roleForm.remark} onChange={(e) => setRoleForm({ ...roleForm, remark: e.target.value })} className="input" placeholder="选填" />
               </div>
             </div>
             <div className="flex justify-end gap-3 mt-6">
-              <button onClick={() => setShowRoleModal(false)} className="px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg text-gray-700 dark:text-gray-300">
-                取消
-              </button>
-              <button onClick={handleSaveRole} className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700">
-                保存
-              </button>
+              <button onClick={() => setShowRoleModal(false)} className="btn btn-secondary">取消</button>
+              <button onClick={handleSaveRole} className="btn btn-primary">保存</button>
             </div>
           </div>
         </div>
@@ -223,47 +197,43 @@ export default function RoleList() {
 
       {/* 权限配置弹窗 */}
       {showPermModal && currentRole && (
-        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
-          <div className="bg-white dark:bg-gray-800 rounded-xl p-6 w-full max-w-lg max-h-[80vh] flex flex-col">
-            <h2 className="text-xl font-bold text-gray-900 dark:text-white mb-4">
-              配置权限 - {currentRole.name}
+        <div className="modal-mask" onClick={() => setShowPermModal(false)}>
+          <div className="modal-card !max-w-lg max-h-[80vh] flex flex-col" onClick={(e) => e.stopPropagation()}>
+            <h2 className="text-lg font-semibold text-[#1a2233] dark:text-white mb-4">
+              配置权限 · {currentRole.name}
             </h2>
-            <div className="flex-1 overflow-y-auto space-y-4 pr-2">
+            <div className="flex-1 overflow-y-auto space-y-5 pr-1 -mx-1 px-1">
               {Object.entries(groupedPermissions).map(([module, perms]) => (
                 <div key={module}>
-                  <h3 className="text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2">
+                  <h3 className="text-[13px] font-semibold text-[#4a5568] dark:text-gray-300 mb-2.5">
                     {moduleNames[module] || module}
                   </h3>
                   <div className="grid grid-cols-2 gap-2">
                     {perms.map((perm) => (
                       <label
                         key={perm.id}
-                        className={`flex items-center gap-2 px-3 py-2 rounded-lg border cursor-pointer transition-colors ${
+                        className={`flex items-center gap-2.5 px-3 py-2.5 rounded-[9px] border cursor-pointer transition-all text-sm ${
                           selectedPermIDs.includes(perm.id)
-                            ? 'border-blue-500 bg-blue-50 dark:bg-blue-900/20'
-                            : 'border-gray-200 dark:border-gray-700 hover:border-gray-300'
+                            ? 'border-[#3b5bfd] bg-[#eef1ff] dark:bg-[#3b5bfd]/15 text-[#1a2233] dark:text-white'
+                            : 'border-[#e8ecf1] dark:border-gray-600 hover:border-[#94a3b8] text-[#4a5568] dark:text-gray-300'
                         }`}
                       >
                         <input
                           type="checkbox"
                           checked={selectedPermIDs.includes(perm.id)}
                           onChange={() => togglePerm(perm.id)}
-                          className="rounded text-blue-600"
+                          className="rounded text-[#3b5bfd] accent-[#3b5bfd]"
                         />
-                        <span className="text-sm text-gray-700 dark:text-gray-300">{perm.name}</span>
+                        {perm.name}
                       </label>
                     ))}
                   </div>
                 </div>
               ))}
             </div>
-            <div className="flex justify-end gap-3 mt-6 pt-4 border-t border-gray-200 dark:border-gray-700">
-              <button onClick={() => setShowPermModal(false)} className="px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg text-gray-700 dark:text-gray-300">
-                取消
-              </button>
-              <button onClick={handleSavePerms} className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700">
-                保存（已选 {selectedPermIDs.length} 项）
-              </button>
+            <div className="flex justify-end gap-3 mt-5 pt-4 border-t border-[#e8ecf1] dark:border-gray-700">
+              <button onClick={() => setShowPermModal(false)} className="btn btn-secondary">取消</button>
+              <button onClick={handleSavePerms} className="btn btn-primary">保存（已选 {selectedPermIDs.length} 项）</button>
             </div>
           </div>
         </div>

@@ -9,8 +9,7 @@ export default function OnlineList() {
 
   useEffect(() => {
     fetchData();
-    // 每 30 秒自动刷新
-    const timer = setInterval(fetchData, 30000);
+    const timer = setInterval(() => fetchData(true), 30000);
     return () => clearInterval(timer);
   }, []);
 
@@ -29,7 +28,7 @@ export default function OnlineList() {
   };
 
   const handleKick = async (adminID: number, jti?: string, nickname?: string) => {
-    const target = jti ? `该会话` : `${nickname} 的所有会话`;
+    const target = jti ? '该会话' : `${nickname} 的所有会话`;
     if (!confirm(`确定要踢掉 ${target} 吗？`)) return;
     try {
       await kickUser({ admin_id: adminID, jti });
@@ -47,123 +46,109 @@ export default function OnlineList() {
     return `${minutes}分钟`;
   };
 
-  const getRemainBadge = (sec: number) => {
-    if (sec <= 600) {
-      return 'text-red-600 dark:text-red-400 font-medium';
-    }
-    if (sec <= 1800) {
-      return 'text-yellow-600 dark:text-yellow-400';
-    }
-    return 'text-gray-600 dark:text-gray-400';
+  const getRemainCls = (sec: number) => {
+    if (sec <= 600) return 'text-red-600 dark:text-red-400 font-medium';
+    if (sec <= 1800) return 'text-amber-600 dark:text-amber-400';
+    return 'text-gray-500 dark:text-gray-400';
   };
 
   return (
-    <div>
-      <div className="flex justify-between items-center mb-6">
+    <div className="space-y-5">
+      {/* 页头 */}
+      <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-2xl font-bold text-gray-900 dark:text-white">在线管理</h1>
-          {data && (
-            <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">
-              当前 {data.total_users} 人在线，共 {data.total_sessions} 个有效会话
-            </p>
-          )}
+          <h1 className="page-title">在线管理</h1>
+          <p className="page-desc">
+            {data ? `当前 ${data.total_users} 人在线，共 ${data.total_sessions} 个有效会话` : '实时会话监控'}
+          </p>
         </div>
-        <button
-          onClick={() => fetchData()}
-          disabled={refreshing}
-          className="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg transition-colors disabled:opacity-50"
-        >
-          {refreshing ? '刷新中...' : '刷新'}
+        <button onClick={() => fetchData()} disabled={refreshing} className="btn btn-secondary">
+          <svg className={`w-4 h-4 ${refreshing ? 'animate-spin' : ''}`} fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+          </svg>
+          {refreshing ? '刷新中' : '刷新'}
         </button>
       </div>
 
-      <div className="space-y-4">
-        {loading ? (
-          <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm p-12 text-center text-gray-500">
-            加载中...
-          </div>
-        ) : !data || data.list.length === 0 ? (
-          <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm p-12 text-center text-gray-500">
-            暂无在线用户
-          </div>
-        ) : (
-          data.list.map((user) => (
-            <div key={user.admin_id} className="bg-white dark:bg-gray-800 rounded-xl shadow-sm overflow-hidden">
-              {/* 用户信息头 */}
-              <div className="px-6 py-4 bg-gray-50 dark:bg-gray-700 flex justify-between items-center">
-                <div className="flex items-center gap-3">
-                  <div className="w-10 h-10 bg-blue-100 dark:bg-blue-900 rounded-full flex items-center justify-center">
-                    <span className="text-blue-600 dark:text-blue-400 font-medium">
-                      {user.nickname?.charAt(0) || user.username.charAt(0)}
-                    </span>
-                  </div>
-                  <div>
-                    <p className="font-medium text-gray-900 dark:text-white">
-                      {user.nickname || user.username}
-                      <span className="ml-2 text-sm text-gray-500">@{user.username}</span>
-                    </p>
-                    <p className="text-xs text-gray-500 dark:text-gray-400">{user.role_text}</p>
-                  </div>
+      {/* 列表 */}
+      {loading ? (
+        <div className="card p-16 text-center text-gray-400">加载中...</div>
+      ) : !data || data.list.length === 0 ? (
+        <div className="card p-16 text-center text-gray-400">
+          <svg className="w-11 h-11 mx-auto mb-3 empty-icon" fill="none" stroke="currentColor" strokeWidth={1.5} viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" d="M5.636 18.364a9 9 0 010-12.728m12.728 0a9 9 0 010 12.728m-9.9-2.829a5 5 0 010-7.07m7.072 0a5 5 0 010 7.07M13 12a1 1 0 11-2 0 1 1 0 012 0z" />
+          </svg>
+          暂无在线用户
+        </div>
+      ) : (
+        data.list.map((user) => (
+          <div key={user.admin_id} className="card overflow-hidden">
+            {/* 用户头 */}
+            <div className="px-6 py-4 bg-[#f7f8fa] dark:bg-gray-700/40 border-b border-[#e8ecf1] dark:border-gray-700/60 flex justify-between items-center">
+              <div className="flex items-center gap-3">
+                <div className="w-10 h-10 bg-gradient-to-br from-[#3b5bfd] to-[#6a4dff] rounded-full flex items-center justify-center">
+                  <span className="text-white text-sm font-semibold">
+                    {user.nickname?.charAt(0) || user.username.charAt(0)}
+                  </span>
                 </div>
-                <button
-                  onClick={() => handleKick(user.admin_id, undefined, user.nickname)}
-                  className="px-3 py-1.5 text-sm text-red-600 dark:text-red-400 border border-red-300 dark:border-red-700 rounded-lg hover:bg-red-50 dark:hover:bg-red-900/20 transition-colors"
-                >
-                  踢掉所有会话
-                </button>
+                <div>
+                  <p className="text-sm font-semibold text-[#1a2233] dark:text-white">
+                    {user.nickname || user.username}
+                    <span className="ml-2 text-[13px] font-normal text-gray-400">@{user.username}</span>
+                  </p>
+                  <p className="text-xs text-[#94a3b8]">{user.role_text} · {user.sessions.length} 个会话</p>
+                </div>
               </div>
-
-              {/* 会话列表 */}
-              <table className="w-full">
-                <thead className="bg-gray-50 dark:bg-gray-750 border-t border-gray-200 dark:border-gray-700">
-                  <tr>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">设备</th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">登录时间</th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">剩余有效期</th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">IP 地址</th>
-                    <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">操作</th>
-                  </tr>
-                </thead>
-                <tbody className="divide-y divide-gray-200 dark:divide-gray-700">
-                  {user.sessions.map((sess) => (
-                    <tr key={sess.jti} className="hover:bg-gray-50 dark:hover:bg-gray-700">
-                      <td className="px-6 py-4">
-                        <span className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium ${
-                          sess.device === 'mobile'
-                            ? 'bg-purple-100 text-purple-700 dark:bg-purple-900/30 dark:text-purple-400'
-                            : 'bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400'
-                        }`}>
-                          {sess.device === 'mobile' ? '📱' : '💻'} {sess.device_text}
-                        </span>
-                        {sess.is_current && (
-                          <span className="ml-2 text-xs text-green-600 dark:text-green-400">(当前会话)</span>
-                        )}
-                      </td>
-                      <td className="px-6 py-4 text-gray-600 dark:text-gray-300 text-sm">{sess.login_time}</td>
-                      <td className="px-6 py-4 text-sm">
-                        <span className={getRemainBadge(sess.remain_sec)}>
-                          {formatRemain(sess.remain_sec)}
-                        </span>
-                      </td>
-                      <td className="px-6 py-4 text-gray-500 dark:text-gray-400 text-sm font-mono">{sess.ip}</td>
-                      <td className="px-6 py-4 text-right">
-                        {!sess.is_current && (
-                          <button
-                            onClick={() => handleKick(user.admin_id, sess.jti, user.nickname)}
-                            className="text-red-600 hover:text-red-800 dark:text-red-400 dark:hover:text-red-300 text-sm"
-                          >
-                            踢下线
-                          </button>
-                        )}
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
+              <button onClick={() => handleKick(user.admin_id, undefined, user.nickname)} className="btn btn-sm border border-red-300 dark:border-red-700 text-red-600 dark:text-red-400 bg-white dark:bg-transparent hover:bg-red-50 dark:hover:bg-red-900/20">
+                踢掉所有会话
+              </button>
             </div>
-          ))
-        )}
-      </div>
+
+            {/* 会话表格 */}
+            <table className="table">
+              <thead>
+                <tr>
+                  <th>设备</th>
+                  <th>登录时间</th>
+                  <th>剩余有效期</th>
+                  <th>IP 地址</th>
+                  <th className="text-right">操作</th>
+                </tr>
+              </thead>
+              <tbody>
+                {user.sessions.map((sess) => (
+                  <tr key={sess.jti}>
+                    <td>
+                      <span className={`badge ${sess.device === 'mobile' ? '' : 'badge-info'}`}
+                        style={sess.device === 'mobile' ? { background: '#f3e8ff', color: '#7e22ce' } : {}}>
+                        {sess.device === 'mobile' ? (
+                          <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" d="M12 18h.01M8 21h8a2 2 0 002-2V5a2 2 0 00-2-2H8a2 2 0 00-2 2v14a2 2 0 002 2z" /></svg>
+                        ) : (
+                          <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" d="M9.75 17L9 20l-1 1h8l-1-1-.75-3M3 13h18M5 17h14a2 2 0 002-2V5a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" /></svg>
+                        )}
+                        {sess.device_text}
+                      </span>
+                      {sess.is_current && (
+                        <span className="ml-2 text-xs text-emerald-600 dark:text-emerald-400 font-medium">(当前会话)</span>
+                      )}
+                    </td>
+                    <td className="text-gray-600 dark:text-gray-300 text-[13px]">{sess.login_time}</td>
+                    <td><span className={`text-[13px] ${getRemainCls(sess.remain_sec)}`}>{formatRemain(sess.remain_sec)}</span></td>
+                    <td className="text-gray-400 dark:text-gray-500 text-[13px] font-mono">{sess.ip}</td>
+                    <td>
+                      <div className="flex justify-end">
+                        {!sess.is_current && (
+                          <button onClick={() => handleKick(user.admin_id, sess.jti, user.nickname)} className="link-btn danger">踢下线</button>
+                        )}
+                      </div>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        ))
+      )}
     </div>
   );
 }

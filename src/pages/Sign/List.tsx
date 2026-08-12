@@ -52,73 +52,87 @@ export default function SignList() {
   };
 
   return (
-    <div>
-      <h1 className="text-2xl font-bold text-gray-900 dark:text-white mb-6">签到管理</h1>
+    <div className="space-y-5">
+      {/* 页头 */}
+      <div>
+        <h1 className="page-title">签到管理</h1>
+        <p className="page-desc">会员到店签到与记录查询</p>
+      </div>
 
-      {/* 签到表单 */}
-      <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm p-6 mb-6">
-        <h2 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">快速签到</h2>
-        <div className="flex gap-4">
-          <input
-            type="text"
-            placeholder="输入会员卡号"
-            value={cardNo}
-            onChange={(e) => setCardNo(e.target.value)}
-            onKeyDown={(e) => e.key === 'Enter' && handleSign()}
-            className="flex-1 px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-lg"
-          />
-          <button
-            onClick={handleSign}
-            disabled={signing}
-            className="px-8 py-3 bg-green-600 hover:bg-green-700 text-white font-medium rounded-lg transition-colors disabled:opacity-50"
-          >
+      {/* 快速签到 */}
+      <div className="card p-6">
+        <h2 className="text-[15.5px] font-semibold text-[#1a2233] dark:text-white mb-4">快速签到</h2>
+        <div className="flex gap-3 max-w-xl">
+          <div className="relative flex-1">
+            <svg className="absolute left-3.5 top-1/2 -translate-y-1/2 w-[18px] h-[18px] text-gray-400" fill="none" stroke="currentColor" strokeWidth={1.8} viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" d="M15 5v2m0 4v2m0 4v2M5 5a2 2 0 00-2 2v3a2 2 0 110 4v3a2 2 0 002 2h14a2 2 0 002-2v-3a2 2 0 110-4V7a2 2 0 00-2-2H5z" />
+            </svg>
+            <input
+              type="text"
+              placeholder="输入会员卡号，回车快速签到"
+              value={cardNo}
+              onChange={(e) => setCardNo(e.target.value)}
+              onKeyDown={(e) => e.key === 'Enter' && handleSign()}
+              className="input pl-11 h-11 text-base"
+            />
+          </div>
+          <button onClick={handleSign} disabled={signing} className="btn btn-success h-11 px-8">
             {signing ? '签到中...' : '签到'}
           </button>
         </div>
 
         {signError && (
-          <div className="mt-4 p-4 bg-red-50 dark:bg-red-900/20 text-red-600 dark:text-red-400 rounded-lg">
+          <div className="mt-4 flex items-center gap-2 px-4 py-3 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800/50 text-red-600 dark:text-red-400 rounded-lg text-sm">
+            <svg className="w-4 h-4 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20"><path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clipRule="evenodd" /></svg>
             {signError}
           </div>
         )}
 
         {signResult && (
-          <div className="mt-4 p-4 bg-green-50 dark:bg-green-900/20 text-green-700 dark:text-green-400 rounded-lg">
-            <p className="font-medium">签到成功！</p>
-            <p>会员：{signResult.member_name}</p>
-            <p>卡号：{signResult.card_no}</p>
-            <p>卡种：{signResult.card_type_name}</p>
-            <p>
-              剩余：{signResult.card_type === 1 ? `${signResult.remain_days}天` : `${signResult.remain_count}次`}
-            </p>
+          <div className="mt-4 px-5 py-4 bg-emerald-50 dark:bg-emerald-900/20 border border-emerald-200 dark:border-emerald-800/50 rounded-lg">
+            <div className="flex items-center gap-2 text-emerald-700 dark:text-emerald-400 font-semibold mb-2">
+              <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 20 20"><path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" /></svg>
+              签到成功
+            </div>
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-3 text-sm">
+              <div><span className="text-emerald-600/70 dark:text-emerald-500">会员</span><p className="font-medium text-emerald-800 dark:text-emerald-300">{signResult.member_name}</p></div>
+              <div><span className="text-emerald-600/70 dark:text-emerald-500">卡号</span><p className="font-medium text-emerald-800 dark:text-emerald-300 font-mono">{signResult.card_no}</p></div>
+              <div><span className="text-emerald-600/70 dark:text-emerald-500">卡种</span><p className="font-medium text-emerald-800 dark:text-emerald-300">{signResult.card_type_name}</p></div>
+              <div><span className="text-emerald-600/70 dark:text-emerald-500">剩余</span><p className="font-medium text-emerald-800 dark:text-emerald-300">{signResult.card_type === 1 ? `${signResult.remain_days} 天` : `${signResult.remain_count} 次`}</p></div>
+            </div>
           </div>
         )}
       </div>
 
       {/* 签到记录 */}
-      <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm overflow-hidden">
-        <div className="px-6 py-4 border-b border-gray-200 dark:border-gray-700">
-          <h2 className="text-lg font-semibold text-gray-900 dark:text-white">签到记录</h2>
+      <div className="card overflow-hidden">
+        <div className="px-6 py-4 border-b border-[#e8ecf1] dark:border-gray-700/60">
+          <h2 className="text-[15.5px] font-semibold text-[#1a2233] dark:text-white">签到记录</h2>
         </div>
-        <table className="w-full">
-          <thead className="bg-gray-50 dark:bg-gray-700">
+        <table className="table">
+          <thead>
             <tr>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">会员</th>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">卡号</th>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">签到时间</th>
+              <th>会员</th>
+              <th>卡号</th>
+              <th>签到时间</th>
             </tr>
           </thead>
-          <tbody className="divide-y divide-gray-200 dark:divide-gray-700">
+          <tbody>
             {loading ? (
-              <tr><td colSpan={3} className="px-6 py-12 text-center">加载中...</td></tr>
+              <tr><td colSpan={3} className="!py-16 text-center text-gray-400">加载中...</td></tr>
             ) : signs.length === 0 ? (
-              <tr><td colSpan={3} className="px-6 py-12 text-center">暂无数据</td></tr>
+              <tr>
+                <td colSpan={3} className="!py-16 text-center text-gray-400">
+                  <svg className="w-10 h-10 mx-auto mb-2 empty-icon" fill="none" stroke="currentColor" strokeWidth={1.5} viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" /></svg>
+                  暂无签到记录
+                </td>
+              </tr>
             ) : (
               signs.map((s) => (
-                <tr key={s.id} className="hover:bg-gray-50 dark:hover:bg-gray-700">
-                  <td className="px-6 py-4">{s.member?.name || '-'}</td>
-                  <td className="px-6 py-4 font-mono text-sm">{s.member_card?.card_no || '-'}</td>
-                  <td className="px-6 py-4 text-gray-500">{s.sign_time}</td>
+                <tr key={s.id}>
+                  <td className="font-medium">{s.member?.name || '-'}</td>
+                  <td className="font-mono text-[13px] text-gray-600 dark:text-gray-300">{s.member_card?.card_no || '-'}</td>
+                  <td className="text-gray-500 dark:text-gray-400 text-[13px]">{s.sign_time}</td>
                 </tr>
               ))
             )}
@@ -126,11 +140,11 @@ export default function SignList() {
         </table>
 
         {total > pageSize && (
-          <div className="px-6 py-4 flex justify-between items-center border-t border-gray-200 dark:border-gray-700">
-            <span className="text-sm text-gray-500">共 {total} 条记录</span>
+          <div className="px-5 py-3.5 flex justify-between items-center border-t border-[#e8ecf1] dark:border-gray-700/60">
+            <span className="text-[13px] text-gray-400">共 {total} 条 · 第 {page} / {Math.ceil(total / pageSize)} 页</span>
             <div className="flex gap-2">
-              <button onClick={() => setPage(page - 1)} disabled={page === 1} className="px-3 py-1 border rounded disabled:opacity-50">上一页</button>
-              <button onClick={() => setPage(page + 1)} disabled={page * pageSize >= total} className="px-3 py-1 border rounded disabled:opacity-50">下一页</button>
+              <button onClick={() => setPage(page - 1)} disabled={page === 1} className="btn btn-secondary btn-sm">上一页</button>
+              <button onClick={() => setPage(page + 1)} disabled={page * pageSize >= total} className="btn btn-secondary btn-sm">下一页</button>
             </div>
           </div>
         )}
