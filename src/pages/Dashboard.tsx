@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
-import { getDashboard } from '../api/sign';
-import type { DashboardData } from '../types';
+import { Link } from 'react-router-dom';
+import { getDashboard, getExpiringSoon } from '../api/sign';
+import type { DashboardData, MemberCard } from '../types';
 
 const statCards = [
   { key: 'today_sign_count', label: '今日签到', iconBg: '#3b5bfd', icon: (
@@ -27,6 +28,7 @@ const dayLabels = ['周日', '周一', '周二', '周三', '周四', '周五', '
 
 export default function Dashboard() {
   const [data, setData] = useState<DashboardData | null>(null);
+  const [expiringCards, setExpiringCards] = useState<MemberCard[]>([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -35,8 +37,12 @@ export default function Dashboard() {
 
   const fetchDashboard = async () => {
     try {
-      const response = await getDashboard();
-      setData(response.data.data);
+      const [dashRes, expRes] = await Promise.all([
+        getDashboard(),
+        getExpiringSoon({ days: 7, page: 1, page_size: 5 }),
+      ]);
+      setData(dashRes.data.data);
+      setExpiringCards(expRes.data.data.list || []);
     } catch (err) {
       console.error('获取仪表盘数据失败', err);
     } finally {
@@ -182,10 +188,12 @@ export default function Dashboard() {
               <h2 className="text-[15.5px] font-semibold text-[#1a2233] dark:text-white">即将到期</h2>
               <p className="text-xs text-[#94a3b8] mt-0.5">7 天内到期的会员卡</p>
             </div>
-            <button className="link-btn text-[13px]">查看全部</button>
+            {expiringCards.length > 0 && (
+              <Link to="/member-cards" className="link-btn text-[13px]">查看全部</Link>
+            )}
           </div>
-          <div className="px-6 pb-6 pt-3">
-            {!data || data.expiring_soon === 0 ? (
+          <div className="px-6 pb-5 pt-3">
+            {expiringCards.length === 0 ? (
               <div className="flex flex-col items-center justify-center py-14 text-gray-400">
                 <svg className="w-11 h-11 mb-3 empty-icon" fill="none" stroke="currentColor" strokeWidth={1.5} viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
@@ -193,9 +201,46 @@ export default function Dashboard() {
                 <p className="text-sm">暂无即将到期的会员卡</p>
               </div>
             ) : (
-              <div className="flex flex-col items-center justify-center py-14 text-gray-400">
-                <p className="text-sm">共 {data.expiring_soon} 张卡即将到期</p>
-                <p className="text-xs text-[#94a3b8] mt-1">到期列表功能开发中</p>
+              <div className="space-y-1">
+                {expiringCards.map((card) => {
+                  const expireDate = card.expire_date ? new Date(card.expire_date) : null;
+                  const remainDays = expireDate
+                    ? Math.ceil((expireDate.getTime() - Date.now()) / 86400000)
+                    : 0;
+                  const urgency = remainDays <= 1 ? 'badge-danger' : remainDays <= 3 ? 'badge-warning' : 'badge-info';
+                  return (
+                    <Link
+                      key={card.id}
+                      to={`/members/${card.member_id}`}
+                      className="flex items-center justify-between px-3 py-2.5 rounded-[9px] hover:bg-[#f7f8fa] dark:hover:bg-gray-700/40 transition-colors group"
+                    >
+                      <div className="flex items-center gap-3 min-w-0">
+                        <div className="w-9 h-9 bg-[#eef1ff] dark:bg-[#3b5bfd]/15 rounded-[9px] flex items-center justify-center flex-shrink-0">
+                          <svg width="16" height="16" fill="none" stroke="#3b5bfd" strokeWidth={1.8} viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" d="M15 5v2m0 4v2m0 4v2M5 5a2 2 0 00-2 2v3a2 2 0 110 4v3a2 2 0 002 2h14a2 2 0 002-2v-3a2 2 0 110-4V7a2 2 0 00-2-2H5z" />
+                          </svg>
+                        </div>
+                        <div className="min-w-0">
+                          <p className="text-[13.5px] font-medium text-[#1a2233] dark:text-white truncate">
+                            {card.member?.name || '未知会员'}
+                          </p>
+                          <p className="text-[11.5px] text-[#94a3b8] dark:text-gray-400 truncate">
+                            {card.card_type_info?.name || '-'} · {card.card_no}
+                          </p>
+                        </div>
+                      </div>
+                      <div className="flex items-center gap-2.5 flex-shrink-0">
+                        <span className={`badge ${urgency}`}>
+                          <span className="dot"></span>
+                          {remainDays <= 0 ? '今天到期' : `${remainDays}天`}
+                        </span>
+                        <svg className="w-4 h-4 text-[#cbd5e1] dark:text-gray-600 group-hover:text-[#94a3b8] transition-colors" fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" d="M9 5l7 7-7 7" />
+                        </svg>
+                      </div>
+                    </Link>
+                  );
+                })}
               </div>
             )}
           </div>

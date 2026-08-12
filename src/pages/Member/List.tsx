@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { getMemberList, createMember, deleteMember, freezeMember, unfreezeMember } from '../../api/member';
+import { exportMembers } from '../../api/export';
 import type { Member, MemberQuery } from '../../types';
 
 export default function MemberList() {
@@ -13,6 +14,7 @@ export default function MemberList() {
   const [formData, setFormData] = useState({ name: '', phone: '', gender: 0 });
   const [searchName, setSearchName] = useState('');
   const [searchPhone, setSearchPhone] = useState('');
+  const [exporting, setExporting] = useState(false);
 
   useEffect(() => {
     fetchMembers();
@@ -74,6 +76,17 @@ export default function MemberList() {
     }
   };
 
+  const handleExport = async () => {
+    setExporting(true);
+    try {
+      await exportMembers();
+    } catch (err: any) {
+      alert(err.message || '导出失败');
+    } finally {
+      setExporting(false);
+    }
+  };
+
   const getStatusBadge = (status: number) => {
     const map: Record<number, { cls: string; text: string }> = {
       1: { cls: 'badge badge-success', text: '正常' },
@@ -96,12 +109,18 @@ export default function MemberList() {
           <h1 className="page-title">会员管理</h1>
           <p className="page-desc">共 {total} 位会员</p>
         </div>
-        <button onClick={() => setShowModal(true)} className="btn btn-primary">
-          <svg className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24">
-            <path strokeLinecap="round" strokeLinejoin="round" d="M12 4v16m8-8H4" />
-          </svg>
+        <div className="flex gap-3">
+          <button onClick={handleExport} disabled={exporting} className="btn btn-secondary">
+            <svg className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" /></svg>
+            {exporting ? '导出中...' : '导出'}
+          </button>
+          <button onClick={() => setShowModal(true)} className="btn btn-primary">
+            <svg className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" d="M12 4v16m8-8H4" />
+            </svg>
           添加会员
-        </button>
+          </button>
+        </div>
       </div>
 
       {/* 搜索栏 */}

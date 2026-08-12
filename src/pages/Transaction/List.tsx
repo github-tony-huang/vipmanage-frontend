@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import { getTransactionList, recharge } from '../../api/transaction';
+import { exportTransactions } from '../../api/export';
 import type { Transaction, TransactionQuery } from '../../types';
 
 export default function TransactionList() {
@@ -10,6 +11,7 @@ export default function TransactionList() {
   const [loading, setLoading] = useState(false);
   const [showRechargeModal, setShowRechargeModal] = useState(false);
   const [rechargeData, setRechargeData] = useState({ member_id: 0, amount: 0, remark: '' });
+  const [exporting, setExporting] = useState(false);
 
   useEffect(() => {
     fetchTransactions();
@@ -40,6 +42,17 @@ export default function TransactionList() {
     }
   };
 
+  const handleExport = async () => {
+    setExporting(true);
+    try {
+      await exportTransactions();
+    } catch (err: any) {
+      alert(err.message || '导出失败');
+    } finally {
+      setExporting(false);
+    }
+  };
+
   const getTypeBadge = (type: number) => {
     const map: Record<number, { cls: string; text: string }> = {
       1: { cls: 'badge badge-success', text: '充值' },
@@ -58,10 +71,16 @@ export default function TransactionList() {
           <h1 className="page-title">交易记录</h1>
           <p className="page-desc">共 {total} 笔交易</p>
         </div>
-        <button onClick={() => setShowRechargeModal(true)} className="btn btn-success">
-          <svg className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" d="M12 4v16m8-8H4" /></svg>
-          充值
-        </button>
+        <div className="flex gap-3">
+          <button onClick={handleExport} disabled={exporting} className="btn btn-secondary">
+            <svg className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" /></svg>
+            {exporting ? '导出中...' : '导出'}
+          </button>
+          <button onClick={() => setShowRechargeModal(true)} className="btn btn-success">
+            <svg className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" d="M12 4v16m8-8H4" /></svg>
+            充值
+          </button>
+        </div>
       </div>
 
       {/* 交易列表 */}

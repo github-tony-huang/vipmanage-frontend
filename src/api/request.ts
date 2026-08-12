@@ -71,6 +71,10 @@ request.interceptors.request.use(
 // 响应拦截器
 request.interceptors.response.use(
   (response) => {
+    // blob 响应（文件下载）直接返回，不做 code 检查
+    if (response.config.responseType === 'blob') {
+      return response;
+    }
     const res = response.data;
     if (res.code !== 200) {
       if (res.code === 401) {
