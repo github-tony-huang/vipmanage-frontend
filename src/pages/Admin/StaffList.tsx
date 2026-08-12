@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { getStaffList, createStaff, updateStaff, deleteStaff, resetStaffPassword } from '../../api/admin';
+import { getStaffList, createStaff, updateStaff, resetStaffPassword } from '../../api/admin';
 import type { Staff } from '../../types';
 
 export default function StaffList() {
@@ -48,16 +48,6 @@ export default function StaffList() {
         await createStaff(formData);
       }
       setShowModal(false);
-      fetchStaffs();
-    } catch (err: any) {
-      alert(err.message || '操作失败');
-    }
-  };
-
-  const handleDelete = async (id: number) => {
-    if (!confirm('确定要停用该员工账号吗？')) return;
-    try {
-      await deleteStaff(id);
       fetchStaffs();
     } catch (err: any) {
       alert(err.message || '操作失败');
