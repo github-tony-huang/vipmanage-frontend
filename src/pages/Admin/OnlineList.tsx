@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { getOnlineList, kickUser } from '../../api/admin';
 import type { OnlineUser } from '../../types';
+import { formatTime } from '../../utils/format';
 
 export default function OnlineList() {
   const [data, setData] = useState<{ total_users: number; total_sessions: number; list: OnlineUser[] } | null>(null);
@@ -132,7 +133,7 @@ export default function OnlineList() {
                         <span className="ml-2 text-xs text-emerald-600 dark:text-emerald-400 font-medium">(当前会话)</span>
                       )}
                     </td>
-                    <td className="text-gray-600 dark:text-gray-300 text-[13px]">{sess.login_time}</td>
+                    <td className="text-gray-600 dark:text-gray-300 text-[13px]">{formatTime(sess.login_time)}</td>
                     <td><span className={`text-[13px] ${getRemainCls(sess.remain_sec)}`}>{formatRemain(sess.remain_sec)}</span></td>
                     <td className="text-gray-400 dark:text-gray-500 text-[13px] font-mono">{sess.ip}</td>
                     <td>

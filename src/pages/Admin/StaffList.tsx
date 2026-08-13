@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { getStaffList, createStaff, updateStaff, resetStaffPassword } from '../../api/admin';
 import type { Staff } from '../../types';
+import { formatTime } from '../../utils/format';
 
 export default function StaffList() {
   const [staffs, setStaffs] = useState<Staff[]>([]);
@@ -129,7 +130,7 @@ export default function StaffList() {
                       ? <span className="badge badge-success"><span className="dot"></span>正常</span>
                       : <span className="badge badge-danger"><span className="dot"></span>停用</span>}
                   </td>
-                  <td className="text-gray-500 dark:text-gray-400 text-[13px]">{staff.created_at}</td>
+                  <td className="text-gray-500 dark:text-gray-400 text-[13px]">{formatTime(staff.created_at)}</td>
                   <td>
                     <div className="flex items-center justify-end gap-3">
                       <button onClick={() => { setPwdTarget(staff); setNewPassword(''); setShowPwdModal(true); }} className="link-btn warning">重置密码</button>

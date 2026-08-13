@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import { getTransactionList, recharge } from '../../api/transaction';
 import { exportTransactions } from '../../api/export';
 import type { Transaction, TransactionQuery } from '../../types';
+import { formatTime } from '../../utils/format';
 
 export default function TransactionList() {
   const [transactions, setTransactions] = useState<Transaction[]>([]);
@@ -137,7 +138,7 @@ export default function TransactionList() {
                     {tx.tx_type === 1 ? '+' : '-'}¥{tx.amount}
                   </td>
                   <td className="text-gray-500 dark:text-gray-400">{tx.remark || '-'}</td>
-                  <td className="text-gray-500 dark:text-gray-400 text-[13px]">{tx.created_at}</td>
+                  <td className="text-gray-500 dark:text-gray-400 text-[13px]">{formatTime(tx.created_at)}</td>
                 </tr>
               ))
             )}

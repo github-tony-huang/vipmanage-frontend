@@ -4,6 +4,7 @@ import { getMemberDetail, updateMember } from '../../api/member';
 import { issueMemberCard } from '../../api/card';
 import type { MemberDetail, CardType } from '../../types';
 import { getCardTypeList } from '../../api/card';
+import { formatTime } from '../../utils/format';
 
 export default function MemberDetail() {
   const { id } = useParams<{ id: string }>();
@@ -157,7 +158,7 @@ export default function MemberDetail() {
           </div>
           <div>
             <label className="text-[13px] text-[#94a3b8] dark:text-gray-400">注册时间</label>
-            <p className="text-[#1a2233] dark:text-white font-medium mt-1 text-[13.5px]">{member.created_at}</p>
+            <p className="text-[#1a2233] dark:text-white font-medium mt-1 text-[13.5px]">{formatTime(member.created_at)}</p>
           </div>
         </div>
       </div>
@@ -190,7 +191,7 @@ export default function MemberDetail() {
                   <p className="font-medium text-[#3b5bfd] dark:text-blue-400">
                     {card.card_type === 1 ? `剩余 ${card.remain_days} 天` : `剩余 ${card.remain_count} 次`}
                   </p>
-                  <p className="text-[#94a3b8] dark:text-gray-500">有效期至：{card.expire_date || '永久'}</p>
+                  <p className="text-[#94a3b8] dark:text-gray-500">有效期至：{card.expire_date ? formatTime(card.expire_date) : '永久'}</p>
                 </div>
               </div>
             ))}

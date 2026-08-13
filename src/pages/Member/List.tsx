@@ -3,6 +3,7 @@ import { Link } from 'react-router-dom';
 import { getMemberList, createMember, deleteMember, freezeMember, unfreezeMember } from '../../api/member';
 import { exportMembers } from '../../api/export';
 import type { Member, MemberQuery } from '../../types';
+import { formatTime } from '../../utils/format';
 
 export default function MemberList() {
   const [members, setMembers] = useState<Member[]>([]);
@@ -199,7 +200,7 @@ export default function MemberList() {
                   <td className="text-gray-600 dark:text-gray-300">{member.phone}</td>
                   <td className="text-gray-500 dark:text-gray-400">{getGenderText(member.gender)}</td>
                   <td>{getStatusBadge(member.status)}</td>
-                  <td className="text-gray-500 dark:text-gray-400 text-[13px]">{member.created_at}</td>
+                  <td className="text-gray-500 dark:text-gray-400 text-[13px]">{formatTime(member.created_at)}</td>
                   <td>
                     <div className="flex items-center justify-end gap-3">
                       <Link to={`/members/${member.id}`} className="link-btn">详情</Link>

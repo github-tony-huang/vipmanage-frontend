@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { getMemberCardList, freezeMemberCard, unfreezeMemberCard, refundMemberCard, renewMemberCard, transferMemberCard } from '../../api/card';
 import type { MemberCard, MemberCardQuery } from '../../types';
+import { formatTime } from '../../utils/format';
 
 export default function MemberCardList() {
   const [cards, setCards] = useState<MemberCard[]>([]);
@@ -142,7 +143,7 @@ export default function MemberCardList() {
                   <td className="text-gray-600 dark:text-gray-300">
                     {card.card_type === 1 ? `${card.remain_days || 0} 天` : `${card.remain_count || 0} 次`}
                   </td>
-                  <td className="text-gray-500 dark:text-gray-400 text-[13px]">{card.expire_date || '-'}</td>
+                  <td className="text-gray-500 dark:text-gray-400 text-[13px]">{formatTime(card.expire_date)}</td>
                   <td>{getStatusBadge(card.status)}</td>
                   <td>
                     <div className="flex items-center justify-end gap-3">
@@ -185,7 +186,7 @@ export default function MemberCardList() {
         <div className="modal-mask" onClick={() => setRenewTarget(null)}>
           <div className="modal-card" onClick={(e) => e.stopPropagation()}>
             <h2 className="text-lg font-semibold text-[#1a2233] dark:text-white mb-2">续卡</h2>
-            <p className="text-sm text-[#94a3b8] mb-4">卡号 {renewTarget.card_no} · 当前到期 {renewTarget.expire_date || '无'}</p>
+            <p className="text-sm text-[#94a3b8] mb-4">卡号 {renewTarget.card_no} · 当前到期 {renewTarget.expire_date ? formatTime(renewTarget.expire_date) : '无'}</p>
             <div>
               <label className="label">续期天数 <span className="text-red-500">*</span></label>
               <input type="number" value={renewDays} onChange={(e) => setRenewDays(Number(e.target.value))} className="input" min={1} />

@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { sign as signApi, getSignList } from '../../api/sign';
 import type { SignRecord, SignQuery } from '../../types';
+import { formatTime } from '../../utils/format';
 
 export default function SignList() {
   const [signs, setSigns] = useState<SignRecord[]>([]);
@@ -144,7 +145,7 @@ export default function SignList() {
                 <tr key={s.id}>
                   <td className="font-medium">{s.member?.name || '-'}</td>
                   <td className="font-mono text-[13px] text-gray-600 dark:text-gray-300">{s.member_card?.card_no || '-'}</td>
-                  <td className="text-gray-500 dark:text-gray-400 text-[13px]">{s.sign_time}</td>
+                  <td className="text-gray-500 dark:text-gray-400 text-[13px]">{formatTime(s.sign_time)}</td>
                 </tr>
               ))
             )}

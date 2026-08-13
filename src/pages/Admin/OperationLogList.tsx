@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { getOperationLogs } from '../../api/admin';
 import type { OperationLog } from '../../types';
+import { formatTime } from '../../utils/format';
 
 const moduleNames: Record<string, string> = {
   member: '会员管理', cardtype: '卡种管理', card: '会员卡管理',
@@ -108,7 +109,7 @@ export default function OperationLogList() {
                   </td>
                   <td className="text-gray-500 dark:text-gray-400 text-[13px] font-mono truncate max-w-[200px]">{log.detail || '-'}</td>
                   <td className="text-gray-400 dark:text-gray-500 text-[13px] font-mono">{log.ip}</td>
-                  <td className="text-gray-500 dark:text-gray-400 text-[13px]">{log.created_at}</td>
+                  <td className="text-gray-500 dark:text-gray-400 text-[13px]">{formatTime(log.created_at)}</td>
                 </tr>
               ))
             )}
