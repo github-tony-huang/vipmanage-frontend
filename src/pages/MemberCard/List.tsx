@@ -66,7 +66,15 @@ export default function MemberCardList() {
     if (!transferSearchKey.trim()) return;
     setTransferSearching(true);
     try {
-      const resp = await getMemberList({ page: 1, page_size: 10, name: transferSearchKey.trim() });
+      const key = transferSearchKey.trim();
+      const params: any = { page: 1, page_size: 10 };
+      // 纯数字按手机号搜，否则按姓名搜
+      if (/^\d+$/.test(key)) {
+        params.phone = key;
+      } else {
+        params.name = key;
+      }
+      const resp = await getMemberList(params);
       setTransferResults(resp.data.data.list || []);
     } catch {
       setTransferResults([]);
@@ -230,17 +238,26 @@ export default function MemberCardList() {
             <div>
               <label className="label">搜索目标会员 <span className="text-red-500">*</span></label>
               <div className="flex gap-2">
-                <input type="text" value={transferSearchKey} onChange={(e) => setTransferSearchKey(e.target.value)} onKeyDown={(e) => e.key === 'Enter' && searchTransferMembers()} className="input flex-1" placeholder="输入会员姓名搜索" />
+                <input type="text" value={transferSearchKey} onChange={(e) => setTransferSearchKey(e.target.value)} onKeyDown={(e) => e.key === 'Enter' && searchTransferMembers()} className="input flex-1" placeholder="输入姓名或手机号搜索" />
                 <button onClick={searchTransferMembers} className="btn btn-secondary">搜索</button>
               </div>
               {transferSearching && <p className="text-sm text-[#94a3b8] mt-2">搜索中...</p>}
               {transferResults.length > 0 && (
-                <div className="mt-2 max-h-48 overflow-y-auto rounded-lg border border-[#e8ecf1] dark:border-gray-700">
+                <div className="mt-2 max-h-56 overflow-y-auto rounded-lg border border-[#e8ecf1] dark:border-gray-700">
                   {transferResults.map((m) => (
-                    <div key={m.id} onClick={() => { setTransferSelected(m); setTransferResults([]); setTransferSearchKey(''); }} className="px-4 py-2.5 cursor-pointer hover:bg-[#f1f5f9] dark:hover:bg-gray-700/50 border-b border-[#e8ecf1] dark:border-gray-700/60 last:border-0 transition-colors">
-                      <span className="font-medium text-[#1a2233] dark:text-white">{m.name}</span>
-                      <span className="text-[#94a3b8] ml-3 text-[13px]">{m.phone}</span>
-                      {m.status === 0 && <span className="text-red-400 ml-2 text-[12px]">已冻结</span>}
+                    <div key={m.id} onClick={() => { setTransferSelected(m); setTransferResults([]); setTransferSearchKey(''); }} className="px-4 py-3 cursor-pointer hover:bg-[#f1f5f9] dark:hover:bg-gray-700/50 border-b border-[#e8ecf1] dark:border-gray-700/60 last:border-0 transition-colors">
+                      <div className="flex items-center justify-between">
+                        <div className="flex items-center gap-3">
+                          <span className="font-medium text-[#1a2233] dark:text-white">{m.name}</span>
+                          <span className="text-[#94a3b8] text-[13px]">{m.phone}</span>
+                          <span className="text-[#94a3b8] text-[12px]">{m.gender === 1 ? '男' : m.gender === 2 ? '女' : ''}</span>
+                          {m.status === 0 && <span className="text-red-400 text-[12px]">已冻结</span>}
+                        </div>
+                        <span className="text-[#94a3b8] text-[12px] font-mono">ID:{m.id}</span>
+                      </div>
+                      {m.created_at && (
+                        <div className="text-[#94a3b8] text-[12px] mt-1">注册时间：{formatTime(m.created_at)}</div>
+                      )}
                     </div>
                   ))}
                 </div>
