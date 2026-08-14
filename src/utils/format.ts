@@ -5,10 +5,24 @@
  */
 export function formatTime(time: string | undefined | null): string {
   if (!time) return '-';
-  // 已经是 yyyy-MM-dd HH:mm:ss 格式，直接返回
   if (/^\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}/.test(time)) return time;
   const d = new Date(time);
   if (isNaN(d.getTime())) return time;
   const pad = (n: number) => String(n).padStart(2, '0');
   return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())} ${pad(d.getHours())}:${pad(d.getMinutes())}:${pad(d.getSeconds())}`;
+}
+
+/**
+ * 实时计算期限卡的剩余天数
+ * 基于 expire_date 和当前时间的差值，向上取整
+ * 过期返回 0
+ */
+export function calcRemainDays(expireDate: string | undefined | null): number {
+  if (!expireDate) return 0;
+  const expire = new Date(expireDate);
+  if (isNaN(expire.getTime())) return 0;
+  const now = new Date();
+  const diff = expire.getTime() - now.getTime();
+  if (diff <= 0) return 0;
+  return Math.ceil(diff / (1000 * 60 * 60 * 24));
 }

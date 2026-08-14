@@ -4,7 +4,7 @@ import { getMemberDetail, updateMember } from '../../api/member';
 import { issueMemberCard } from '../../api/card';
 import type { MemberDetail, CardType } from '../../types';
 import { getCardTypeList } from '../../api/card';
-import { formatTime } from '../../utils/format';
+import { formatTime, calcRemainDays } from '../../utils/format';
 
 export default function MemberDetail() {
   const { id } = useParams<{ id: string }>();
@@ -189,7 +189,7 @@ export default function MemberDetail() {
                 <div className="space-y-1.5 text-[13px] text-[#4a5568] dark:text-gray-300">
                   <p className="font-mono">卡号：{card.card_no}</p>
                   <p className="font-medium text-[#3b5bfd] dark:text-blue-400">
-                    {card.card_type === 1 ? `剩余 ${card.remain_days} 天` : `剩余 ${card.remain_count} 次`}
+                    {card.card_type === 1 ? `剩余 ${calcRemainDays(card.expire_date)} 天` : `剩余 ${card.remain_count} 次`}
                   </p>
                   <p className="text-[#94a3b8] dark:text-gray-500">有效期至：{card.expire_date ? formatTime(card.expire_date) : '永久'}</p>
                 </div>

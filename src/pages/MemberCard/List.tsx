@@ -3,7 +3,7 @@ import { Link } from 'react-router-dom';
 import { getMemberCardList, freezeMemberCard, unfreezeMemberCard, refundMemberCard, renewMemberCard, transferMemberCard } from '../../api/card';
 import { getMemberList } from '../../api/member';
 import type { MemberCard, MemberCardQuery, Member } from '../../types';
-import { formatTime } from '../../utils/format';
+import { formatTime, calcRemainDays } from '../../utils/format';
 
 export default function MemberCardList() {
   const [cards, setCards] = useState<MemberCard[]>([]);
@@ -166,7 +166,7 @@ export default function MemberCardList() {
                   </td>
                   <td className="text-gray-600 dark:text-gray-300">{card.card_type_info?.name || '-'}</td>
                   <td className="text-gray-600 dark:text-gray-300">
-                    {card.card_type === 1 ? `${card.remain_days || 0} 天` : `${card.remain_count || 0} 次`}
+                    {card.card_type === 1 ? `${calcRemainDays(card.expire_date)} 天` : `${card.remain_count || 0} 次`}
                   </td>
                   <td className="text-gray-500 dark:text-gray-400 text-[13px]">{formatTime(card.expire_date)}</td>
                   <td>{getStatusBadge(card.status)}</td>
