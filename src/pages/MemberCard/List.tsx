@@ -1,7 +1,8 @@
 import { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { getMemberCardList, freezeMemberCard, unfreezeMemberCard, refundMemberCard, renewMemberCard, transferMemberCard } from '../../api/card';
-import type { MemberCard, MemberCardQuery } from '../../types';
+import { getMemberList } from '../../api/member';
+import type { MemberCard, MemberCardQuery, Member } from '../../types';
 import { formatTime } from '../../utils/format';
 
 export default function MemberCardList() {
@@ -14,7 +15,10 @@ export default function MemberCardList() {
   const [renewTarget, setRenewTarget] = useState<MemberCard | null>(null);
   const [renewDays, setRenewDays] = useState(30);
   const [transferTarget, setTransferTarget] = useState<MemberCard | null>(null);
-  const [transferMemberId, setTransferMemberId] = useState('');
+  const [transferSearchKey, setTransferSearchKey] = useState('');
+  const [transferResults, setTransferResults] = useState<Member[]>([]);
+  const [transferSelected, setTransferSelected] = useState<Member | null>(null);
+  const [transferSearching, setTransferSearching] = useState(false);
 
   useEffect(() => {
     fetchCards();
@@ -58,14 +62,27 @@ export default function MemberCardList() {
     }
   };
 
-  const handleTransfer = async () => {
-    if (!transferTarget) return;
-    const targetId = Number(transferMemberId);
-    if (!targetId) { alert('请输入目标会员ID'); return; }
+  const searchTransferMembers = async () => {
+    if (!transferSearchKey.trim()) return;
+    setTransferSearching(true);
     try {
-      await transferMemberCard(transferTarget.id, targetId);
+      const resp = await getMemberList({ page: 1, page_size: 10, name: transferSearchKey.trim() });
+      setTransferResults(resp.data.data.list || []);
+    } catch {
+      setTransferResults([]);
+    } finally {
+      setTransferSearching(false);
+    }
+  };
+
+  const handleTransfer = async () => {
+    if (!transferTarget || !transferSelected) return;
+    try {
+      await transferMemberCard(transferTarget.id, transferSelected.id);
       setTransferTarget(null);
-      setTransferMemberId('');
+      setTransferSearchKey('');
+      setTransferResults([]);
+      setTransferSelected(null);
       fetchCards();
     } catch (err: any) {
       alert(err.message || '转卡失败');
@@ -159,7 +176,7 @@ export default function MemberCardList() {
                       {card.status !== 5 && (
                         <>
                           <button onClick={() => { setRenewTarget(card); setRenewDays(30); }} className="link-btn">续卡</button>
-                          <button onClick={() => { setTransferTarget(card); setTransferMemberId(''); }} className="link-btn">转卡</button>
+                          <button onClick={() => { setTransferTarget(card); setTransferSearchKey(''); setTransferResults([]); setTransferSelected(null); }} className="link-btn">转卡</button>
                         </>
                       )}
                     </div>
@@ -211,12 +228,33 @@ export default function MemberCardList() {
             <h2 className="text-lg font-semibold text-[#1a2233] dark:text-white mb-2">转卡</h2>
             <p className="text-sm text-[#94a3b8] mb-4">卡号 {transferTarget.card_no} · 当前会员 {transferTarget.member?.name || '-'}</p>
             <div>
-              <label className="label">目标会员 ID <span className="text-red-500">*</span></label>
-              <input type="number" value={transferMemberId} onChange={(e) => setTransferMemberId(e.target.value)} className="input" placeholder="请输入目标会员 ID" />
+              <label className="label">搜索目标会员 <span className="text-red-500">*</span></label>
+              <div className="flex gap-2">
+                <input type="text" value={transferSearchKey} onChange={(e) => setTransferSearchKey(e.target.value)} onKeyDown={(e) => e.key === 'Enter' && searchTransferMembers()} className="input flex-1" placeholder="输入会员姓名搜索" />
+                <button onClick={searchTransferMembers} className="btn btn-secondary">搜索</button>
+              </div>
+              {transferSearching && <p className="text-sm text-[#94a3b8] mt-2">搜索中...</p>}
+              {transferResults.length > 0 && (
+                <div className="mt-2 max-h-48 overflow-y-auto rounded-lg border border-[#e8ecf1] dark:border-gray-700">
+                  {transferResults.map((m) => (
+                    <div key={m.id} onClick={() => { setTransferSelected(m); setTransferResults([]); setTransferSearchKey(''); }} className="px-4 py-2.5 cursor-pointer hover:bg-[#f1f5f9] dark:hover:bg-gray-700/50 border-b border-[#e8ecf1] dark:border-gray-700/60 last:border-0 transition-colors">
+                      <span className="font-medium text-[#1a2233] dark:text-white">{m.name}</span>
+                      <span className="text-[#94a3b8] ml-3 text-[13px]">{m.phone}</span>
+                      {m.status === 0 && <span className="text-red-400 ml-2 text-[12px]">已冻结</span>}
+                    </div>
+                  ))}
+                </div>
+              )}
+              {transferSelected && (
+                <div className="mt-3 px-4 py-2.5 rounded-lg bg-[#f0fdf4] dark:bg-green-900/20 border border-green-200 dark:border-green-700/40">
+                  <span className="text-sm text-green-700 dark:text-green-300">已选择：{transferSelected.name}（{transferSelected.phone}）</span>
+                  <button onClick={() => setTransferSelected(null)} className="ml-2 text-[#94a3b8] hover:text-red-400 text-[13px]">取消选择</button>
+                </div>
+              )}
             </div>
             <div className="flex justify-end gap-3 mt-6">
               <button onClick={() => setTransferTarget(null)} className="btn btn-secondary">取消</button>
-              <button onClick={handleTransfer} className="btn btn-primary">确认转卡</button>
+              <button onClick={handleTransfer} disabled={!transferSelected} className="btn btn-primary disabled:opacity-40 disabled:cursor-not-allowed">确认转卡</button>
             </div>
           </div>
         </div>
