@@ -10,8 +10,7 @@ import type {
 } from '../types';
 
 export interface SignDTO {
-  card_no?: string;
-  member_id?: number;
+  card_id: number;
 }
 
 // 签到

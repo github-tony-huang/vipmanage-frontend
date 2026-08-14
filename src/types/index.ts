@@ -122,6 +122,7 @@ export interface SignResponse {
   card_type_name: string;
   remain_days?: number;
   remain_count?: number;
+  expire_date?: string;
   sign_time: string;
 }
 
