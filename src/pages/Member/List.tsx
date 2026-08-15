@@ -12,7 +12,7 @@ export default function MemberList() {
   const [pageSize] = useState(20);
   const [loading, setLoading] = useState(false);
   const [showModal, setShowModal] = useState(false);
-  const [formData, setFormData] = useState({ name: '', phone: '', gender: 0 });
+  const [formData, setFormData] = useState({ name: '', phone: '', gender: 0, birthday: '' });
   const [searchName, setSearchName] = useState('');
   const [searchPhone, setSearchPhone] = useState('');
   const [exporting, setExporting] = useState(false);
@@ -42,7 +42,7 @@ export default function MemberList() {
     try {
       await createMember(formData);
       setShowModal(false);
-      setFormData({ name: '', phone: '', gender: 0 });
+      setFormData({ name: '', phone: '', gender: 0, birthday: '' });
       fetchMembers();
     } catch (err: any) {
       alert(err.message || '创建失败');
@@ -269,6 +269,15 @@ export default function MemberList() {
                   <option value={1}>男</option>
                   <option value={2}>女</option>
                 </select>
+              </div>
+              <div>
+                <label className="label">生日</label>
+                <input
+                  type="date"
+                  value={formData.birthday}
+                  onChange={(e) => setFormData({ ...formData, birthday: e.target.value })}
+                  className="input"
+                />
               </div>
             </div>
             <div className="flex justify-end gap-3 mt-6">

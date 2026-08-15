@@ -1,8 +1,16 @@
 import { useState, useEffect } from 'react';
-import { getTransactionList, recharge } from '../../api/transaction';
+import { getTransactionList, recharge, consume, refund } from '../../api/transaction';
 import { exportTransactions } from '../../api/export';
 import type { Transaction, TransactionQuery } from '../../types';
 import { formatTime } from '../../utils/format';
+
+type ModalType = 'recharge' | 'consume' | 'refund';
+
+const modalConfig: Record<ModalType, { title: string; label: string; btn: string; btnCls: string }> = {
+  recharge: { title: '会员充值', label: '充值金额（元）', btn: '确认充值', btnCls: 'btn btn-success' },
+  consume: { title: '消费扣款', label: '消费金额（元）', btn: '确认消费', btnCls: 'btn btn-primary' },
+  refund: { title: '退款', label: '退款金额（元）', btn: '确认退款', btnCls: 'btn btn-warning' },
+};
 
 export default function TransactionList() {
   const [transactions, setTransactions] = useState<Transaction[]>([]);
@@ -10,8 +18,9 @@ export default function TransactionList() {
   const [page, setPage] = useState(1);
   const [pageSize] = useState(20);
   const [loading, setLoading] = useState(false);
-  const [showRechargeModal, setShowRechargeModal] = useState(false);
-  const [rechargeData, setRechargeData] = useState({ member_id: 0, amount: 0, remark: '' });
+  const [showModal, setShowModal] = useState(false);
+  const [modalType, setModalType] = useState<ModalType>('recharge');
+  const [modalData, setModalData] = useState({ member_id: 0, amount: 0, remark: '' });
   const [exporting, setExporting] = useState(false);
   const [txType, setTxType] = useState<number | ''>('');
   const [startDate, setStartDate] = useState('');
@@ -38,14 +47,21 @@ export default function TransactionList() {
     }
   };
 
-  const handleRecharge = async () => {
+  const openModal = (type: ModalType) => {
+    setModalType(type);
+    setModalData({ member_id: 0, amount: 0, remark: '' });
+    setShowModal(true);
+  };
+
+  const handleSubmit = async () => {
     try {
-      await recharge(rechargeData);
-      setShowRechargeModal(false);
-      setRechargeData({ member_id: 0, amount: 0, remark: '' });
+      if (modalType === 'recharge') await recharge(modalData);
+      else if (modalType === 'consume') await consume(modalData);
+      else await refund(modalData);
+      setShowModal(false);
       fetchTransactions();
     } catch (err: any) {
-      alert(err.message || '充值失败');
+      alert(err.message || '操作失败');
     }
   };
 
@@ -70,6 +86,8 @@ export default function TransactionList() {
     return <span className={item.cls}><span className="dot"></span>{item.text}</span>;
   };
 
+  const cfg = modalConfig[modalType];
+
   return (
     <div className="space-y-5">
       {/* 页头 */}
@@ -83,7 +101,15 @@ export default function TransactionList() {
             <svg className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" /></svg>
             {exporting ? '导出中...' : '导出'}
           </button>
-          <button onClick={() => setShowRechargeModal(true)} className="btn btn-success">
+          <button onClick={() => openModal('consume')} className="btn btn-primary">
+            <svg className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" d="M20 12H4" /></svg>
+            消费
+          </button>
+          <button onClick={() => openModal('refund')} className="btn btn-secondary">
+            <svg className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" d="M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z" /></svg>
+            退款
+          </button>
+          <button onClick={() => openModal('recharge')} className="btn btn-success">
             <svg className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" d="M12 4v16m8-8H4" /></svg>
             充值
           </button>
@@ -92,7 +118,6 @@ export default function TransactionList() {
 
       {/* 交易列表 */}
       <div className="card overflow-hidden">
-        {/* 筛选栏 */}
         <div className="px-6 py-4 border-b border-[#e8ecf1] dark:border-gray-700/60 flex items-center gap-3 flex-wrap">
           <select value={txType} onChange={(e) => { setTxType(e.target.value === '' ? '' : Number(e.target.value)); setPage(1); }} className="input !h-9 !w-auto text-[13px]">
             <option value="">全部类型</option>
@@ -156,28 +181,28 @@ export default function TransactionList() {
         )}
       </div>
 
-      {/* 充值弹窗 */}
-      {showRechargeModal && (
-        <div className="modal-mask" onClick={() => setShowRechargeModal(false)}>
+      {/* 通用弹窗：充值/消费/退款 */}
+      {showModal && (
+        <div className="modal-mask" onClick={() => setShowModal(false)}>
           <div className="modal-card" onClick={(e) => e.stopPropagation()}>
-            <h2 className="text-lg font-semibold text-[#1a2233] dark:text-white mb-5">会员充值</h2>
+            <h2 className="text-lg font-semibold text-[#1a2233] dark:text-white mb-5">{cfg.title}</h2>
             <div className="space-y-4">
               <div>
                 <label className="label">会员 ID <span className="text-red-500">*</span></label>
-                <input type="number" value={rechargeData.member_id || ''} onChange={(e) => setRechargeData({ ...rechargeData, member_id: Number(e.target.value) })} className="input" placeholder="请输入会员 ID" />
+                <input type="number" value={modalData.member_id || ''} onChange={(e) => setModalData({ ...modalData, member_id: Number(e.target.value) })} className="input" placeholder="请输入会员 ID" />
               </div>
               <div>
-                <label className="label">充值金额（元） <span className="text-red-500">*</span></label>
-                <input type="number" step="0.01" value={rechargeData.amount || ''} onChange={(e) => setRechargeData({ ...rechargeData, amount: Number(e.target.value) })} className="input" placeholder="0.00" />
+                <label className="label">{cfg.label} <span className="text-red-500">*</span></label>
+                <input type="number" step="0.01" value={modalData.amount || ''} onChange={(e) => setModalData({ ...modalData, amount: Number(e.target.value) })} className="input" placeholder="0.00" />
               </div>
               <div>
                 <label className="label">备注</label>
-                <input type="text" value={rechargeData.remark} onChange={(e) => setRechargeData({ ...rechargeData, remark: e.target.value })} className="input" placeholder="选填" />
+                <input type="text" value={modalData.remark} onChange={(e) => setModalData({ ...modalData, remark: e.target.value })} className="input" placeholder="选填" />
               </div>
             </div>
             <div className="flex justify-end gap-3 mt-6">
-              <button onClick={() => setShowRechargeModal(false)} className="btn btn-secondary">取消</button>
-              <button onClick={handleRecharge} className="btn btn-success">确认充值</button>
+              <button onClick={() => setShowModal(false)} className="btn btn-secondary">取消</button>
+              <button onClick={handleSubmit} className={cfg.btnCls}>{cfg.btn}</button>
             </div>
           </div>
         </div>

@@ -13,6 +13,7 @@ import OnlineList from './pages/Admin/OnlineList';
 import RoleList from './pages/Admin/RoleList';
 import StaffList from './pages/Admin/StaffList';
 import OperationLogList from './pages/Admin/OperationLogList';
+import SystemSettings from './pages/Admin/SystemSettings';
 
 // 受保护的路由组件
 const ProtectedRoute = ({ children }: { children: React.ReactNode }) => {
@@ -48,6 +49,7 @@ function App() {
           <Route path="admin/staff" element={<StaffList />} />
           <Route path="admin/roles" element={<RoleList />} />
           <Route path="admin/logs" element={<OperationLogList />} />
+          <Route path="admin/settings" element={<SystemSettings />} />
         </Route>
       </Routes>
     </BrowserRouter>

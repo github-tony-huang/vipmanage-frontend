@@ -12,7 +12,7 @@ export default function MemberDetail() {
   const [member, setMember] = useState<MemberDetail | null>(null);
   const [loading, setLoading] = useState(true);
   const [editing, setEditing] = useState(false);
-  const [formData, setFormData] = useState({ name: '', phone: '', gender: 0 });
+  const [formData, setFormData] = useState({ name: '', phone: '', gender: 0, birthday: '' });
   const [showIssueModal, setShowIssueModal] = useState(false);
   const [cardTypes, setCardTypes] = useState<CardType[]>([]);
   const [issueData, setIssueData] = useState({ card_type_id: 0, buy_price: 0 });
@@ -33,6 +33,7 @@ export default function MemberDetail() {
         name: response.data.data.name,
         phone: response.data.data.phone,
         gender: response.data.data.gender,
+        birthday: response.data.data.birthday || '',
       });
     } catch (err) {
       console.error('获取会员详情失败', err);
@@ -150,6 +151,14 @@ export default function MemberDetail() {
               </select>
             ) : (
               <p className="text-[#1a2233] dark:text-white font-medium mt-1">{member.gender === 1 ? '男' : member.gender === 2 ? '女' : '未知'}</p>
+            )}
+          </div>
+          <div>
+            <label className="text-[13px] text-[#94a3b8] dark:text-gray-400">生日</label>
+            {editing ? (
+              <input type="date" value={formData.birthday} onChange={(e) => setFormData({ ...formData, birthday: e.target.value })} className="input mt-1.5" />
+            ) : (
+              <p className="text-[#1a2233] dark:text-white font-medium mt-1">{member.birthday || '未设置'}</p>
             )}
           </div>
           <div>
