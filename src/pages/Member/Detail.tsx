@@ -5,6 +5,7 @@ import { issueMemberCard } from '../../api/card';
 import type { MemberDetail, CardType } from '../../types';
 import { getCardTypeList } from '../../api/card';
 import { formatTime, calcRemainDays } from '../../utils/format';
+import BirthdayPicker from '../../components/BirthdayPicker';
 
 export default function MemberDetail() {
   const { id } = useParams<{ id: string }>();
@@ -156,7 +157,7 @@ export default function MemberDetail() {
           <div>
             <label className="text-[13px] text-[#94a3b8] dark:text-gray-400">生日</label>
             {editing ? (
-              <input type="date" value={formData.birthday} onChange={(e) => setFormData({ ...formData, birthday: e.target.value })} className="input mt-1.5" />
+              <BirthdayPicker value={formData.birthday} onChange={(v) => setFormData({ ...formData, birthday: v })} className="mt-1.5" />
             ) : (
               <p className="text-[#1a2233] dark:text-white font-medium mt-1">{member.birthday || '未设置'}</p>
             )}

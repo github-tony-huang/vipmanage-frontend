@@ -23,6 +23,8 @@ export interface Admin {
   nickname: string;
   role: number;
   role_text: string;
+  role_id?: number;
+  permissions: string[];
 }
 
 // 登录响应（双 token）
@@ -201,6 +203,8 @@ export interface Staff {
   nickname: string;
   role: number;
   role_text: string;
+  role_id?: number;
+  role_name?: string;
   status: number;
   status_text: string;
   created_at: string;

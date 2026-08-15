@@ -4,6 +4,7 @@ import { getMemberList, createMember, deleteMember, freezeMember, unfreezeMember
 import { exportMembers } from '../../api/export';
 import type { Member, MemberQuery } from '../../types';
 import { formatTime } from '../../utils/format';
+import BirthdayPicker from '../../components/BirthdayPicker';
 
 export default function MemberList() {
   const [members, setMembers] = useState<Member[]>([]);
@@ -272,12 +273,7 @@ export default function MemberList() {
               </div>
               <div>
                 <label className="label">生日</label>
-                <input
-                  type="date"
-                  value={formData.birthday}
-                  onChange={(e) => setFormData({ ...formData, birthday: e.target.value })}
-                  className="input"
-                />
+                <BirthdayPicker value={formData.birthday} onChange={(v) => setFormData({ ...formData, birthday: v })} />
               </div>
             </div>
             <div className="flex justify-end gap-3 mt-6">

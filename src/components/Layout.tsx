@@ -6,6 +6,7 @@ interface MenuItem {
   path: string;
   label: string;
   icon: React.ReactNode;
+  module?: string; // 权限模块，不设=所有人可见
 }
 
 const iconProps = { fill: 'none', stroke: 'currentColor', strokeWidth: 1.8, viewBox: '0 0 24 24' } as const;
@@ -17,27 +18,27 @@ const menuItems: MenuItem[] = [
     ),
   },
   {
-    path: '/members', label: '会员管理', icon: (
+    path: '/members', label: '会员管理', module: 'member', icon: (
       <svg {...iconProps} width="18" height="18"><path strokeLinecap="round" strokeLinejoin="round" d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z"/></svg>
     ),
   },
   {
-    path: '/card-types', label: '卡种管理', icon: (
+    path: '/card-types', label: '卡种管理', module: 'cardtype', icon: (
       <svg {...iconProps} width="18" height="18"><path strokeLinecap="round" strokeLinejoin="round" d="M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z"/></svg>
     ),
   },
   {
-    path: '/member-cards', label: '会员卡管理', icon: (
+    path: '/member-cards', label: '会员卡管理', module: 'card', icon: (
       <svg {...iconProps} width="18" height="18"><path strokeLinecap="round" strokeLinejoin="round" d="M15 5v2m0 4v2m0 4v2M5 5a2 2 0 00-2 2v3a2 2 0 110 4v3a2 2 0 002 2h14a2 2 0 002-2v-3a2 2 0 110-4V7a2 2 0 00-2-2H5z"/></svg>
     ),
   },
   {
-    path: '/signs', label: '签到记录', icon: (
+    path: '/signs', label: '签到记录', module: 'sign', icon: (
       <svg {...iconProps} width="18" height="18"><path strokeLinecap="round" strokeLinejoin="round" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4"/></svg>
     ),
   },
   {
-    path: '/transactions', label: '交易记录', icon: (
+    path: '/transactions', label: '交易记录', module: 'transaction', icon: (
       <svg {...iconProps} width="18" height="18"><path strokeLinecap="round" strokeLinejoin="round" d="M9 8h6m-5 0a3 3 0 110 6H9l3 3m-3-6h6m6 1a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
     ),
   },
@@ -45,31 +46,38 @@ const menuItems: MenuItem[] = [
 
 const adminMenuItems: MenuItem[] = [
   {
-    path: '/admin/online', label: '在线管理', icon: (
+    path: '/admin/online', label: '在线管理', module: 'admin', icon: (
       <svg {...iconProps} width="18" height="18"><path strokeLinecap="round" strokeLinejoin="round" d="M5.636 18.364a9 9 0 010-12.728m12.728 0a9 9 0 010 12.728m-9.9-2.829a5 5 0 010-7.07m7.072 0a5 5 0 010 7.07M13 12a1 1 0 11-2 0 1 1 0 012 0z"/></svg>
     ),
   },
   {
-    path: '/admin/staff', label: '员工管理', icon: (
+    path: '/admin/staff', label: '员工管理', module: 'admin', icon: (
       <svg {...iconProps} width="18" height="18"><path strokeLinecap="round" strokeLinejoin="round" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0z"/></svg>
     ),
   },
   {
-    path: '/admin/roles', label: '角色权限', icon: (
+    path: '/admin/roles', label: '角色权限', module: 'admin', icon: (
       <svg {...iconProps} width="18" height="18"><path strokeLinecap="round" strokeLinejoin="round" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"/></svg>
     ),
   },
   {
-    path: '/admin/logs', label: '操作日志', icon: (
+    path: '/admin/logs', label: '操作日志', module: 'admin', icon: (
       <svg {...iconProps} width="18" height="18"><path strokeLinecap="round" strokeLinejoin="round" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4"/></svg>
     ),
   },
   {
-    path: '/admin/settings', label: '系统设置', icon: (
+    path: '/admin/settings', label: '系统设置', module: 'admin', icon: (
       <svg {...iconProps} width="18" height="18"><path strokeLinecap="round" strokeLinejoin="round" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" /><path strokeLinecap="round" strokeLinejoin="round" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" /></svg>
     ),
   },
 ];
+
+// 检查用户是否有权限访问该菜单
+function hasMenuPermission(permissions: string[], module?: string): boolean {
+  if (!module) return true; // 无模块限制的菜单（如首页）始终可见
+  if (permissions.includes('*')) return true; // 超管
+  return permissions.some((p) => p.startsWith(module + ':'));
+}
 
 // 页面标题映射
 const pageTitles: Record<string, string> = {
@@ -90,6 +98,10 @@ export default function Layout() {
   const location = useLocation();
   const navigate = useNavigate();
   const { admin, logout } = useAuthStore();
+  const permissions = admin?.permissions || [];
+
+  const visibleMenuItems = menuItems.filter((item) => hasMenuPermission(permissions, item.module));
+  const visibleAdminItems = adminMenuItems.filter((item) => hasMenuPermission(permissions, item.module));
 
   const handleLogout = async () => {
     try {
@@ -151,14 +163,16 @@ export default function Layout() {
 
         {/* 菜单 */}
         <nav className="flex-1 overflow-y-auto py-4 px-3">
-          {menuItems.map(renderMenuItem)}
+          {visibleMenuItems.map(renderMenuItem)}
 
-          <div className="pt-2">
-            <p className="px-3 pt-4 pb-2 text-[11px] font-semibold text-[#94a3b8] dark:text-gray-500 uppercase tracking-[0.08em]">
-              系统管理
-            </p>
-            {adminMenuItems.map(renderMenuItem)}
-          </div>
+          {visibleAdminItems.length > 0 && (
+            <div className="pt-2">
+              <p className="px-3 pt-4 pb-2 text-[11px] font-semibold text-[#94a3b8] dark:text-gray-500 uppercase tracking-[0.08em]">
+                系统管理
+              </p>
+              {visibleAdminItems.map(renderMenuItem)}
+            </div>
+          )}
         </nav>
 
         {/* 用户信息 */}

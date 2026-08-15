@@ -71,12 +71,12 @@ export const getStaffList = () => {
 };
 
 // 创建员工
-export const createStaff = (data: { username: string; password: string; nickname?: string; role?: number }) => {
+export const createStaff = (data: { username: string; password: string; nickname?: string; role_id: number }) => {
   return request.post<ApiResponse<any>>('/admin/staff', data);
 };
 
 // 编辑员工
-export const updateStaff = (id: number, data: { nickname?: string; role?: number; status?: number }) => {
+export const updateStaff = (id: number, data: { nickname?: string; role_id?: number; status?: number }) => {
   return request.put<ApiResponse<any>>(`/admin/staff/${id}`, data);
 };
 

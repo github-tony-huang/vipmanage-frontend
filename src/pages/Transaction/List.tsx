@@ -1,15 +1,17 @@
 import { useState, useEffect } from 'react';
 import { getTransactionList, recharge, consume, refund } from '../../api/transaction';
+import { getMemberList } from '../../api/member';
+import { getMemberCardList } from '../../api/card';
 import { exportTransactions } from '../../api/export';
-import type { Transaction, TransactionQuery } from '../../types';
+import type { Transaction, TransactionQuery, Member, MemberCard } from '../../types';
 import { formatTime } from '../../utils/format';
 
 type ModalType = 'recharge' | 'consume' | 'refund';
 
-const modalConfig: Record<ModalType, { title: string; label: string; btn: string; btnCls: string }> = {
-  recharge: { title: '会员充值', label: '充值金额（元）', btn: '确认充值', btnCls: 'btn btn-success' },
-  consume: { title: '消费扣款', label: '消费金额（元）', btn: '确认消费', btnCls: 'btn btn-primary' },
-  refund: { title: '退款', label: '退款金额（元）', btn: '确认退款', btnCls: 'btn btn-warning' },
+const modalConfig: Record<ModalType, { title: string; label: string; btn: string; btnCls: string; requireMember: boolean }> = {
+  recharge: { title: '会员充值', label: '充值金额（元）', btn: '确认充值', btnCls: 'btn btn-success', requireMember: true },
+  consume: { title: '消费扣款', label: '消费金额（元）', btn: '确认消费', btnCls: 'btn btn-primary', requireMember: false },
+  refund: { title: '退款', label: '退款金额（元）', btn: '确认退款', btnCls: 'btn btn-warning', requireMember: false },
 };
 
 export default function TransactionList() {
@@ -18,13 +20,22 @@ export default function TransactionList() {
   const [page, setPage] = useState(1);
   const [pageSize] = useState(20);
   const [loading, setLoading] = useState(false);
-  const [showModal, setShowModal] = useState(false);
-  const [modalType, setModalType] = useState<ModalType>('recharge');
-  const [modalData, setModalData] = useState({ member_id: 0, amount: 0, remark: '' });
   const [exporting, setExporting] = useState(false);
   const [txType, setTxType] = useState<number | ''>('');
   const [startDate, setStartDate] = useState('');
   const [endDate, setEndDate] = useState('');
+
+  // 弹窗状态
+  const [showModal, setShowModal] = useState(false);
+  const [modalType, setModalType] = useState<ModalType>('recharge');
+  const [amount, setAmount] = useState(0);
+  const [remark, setRemark] = useState('');
+  const [searchKey, setSearchKey] = useState('');
+  const [searchResults, setSearchResults] = useState<Member[]>([]);
+  const [searching, setSearching] = useState(false);
+  const [selectedMember, setSelectedMember] = useState<Member | null>(null);
+  const [memberCards, setMemberCards] = useState<MemberCard[]>([]);
+  const [selectedCardId, setSelectedCardId] = useState(0);
 
   useEffect(() => {
     fetchTransactions();
@@ -49,15 +60,58 @@ export default function TransactionList() {
 
   const openModal = (type: ModalType) => {
     setModalType(type);
-    setModalData({ member_id: 0, amount: 0, remark: '' });
+    setAmount(0);
+    setRemark('');
+    setSearchKey('');
+    setSearchResults([]);
+    setSelectedMember(null);
+    setMemberCards([]);
+    setSelectedCardId(0);
     setShowModal(true);
   };
 
-  const handleSubmit = async () => {
+  const handleSearch = async () => {
+    if (!searchKey.trim()) return;
+    setSearching(true);
     try {
-      if (modalType === 'recharge') await recharge(modalData);
-      else if (modalType === 'consume') await consume(modalData);
-      else await refund(modalData);
+      const key = searchKey.trim();
+      const params: any = { page: 1, page_size: 10 };
+      if (/^\d+$/.test(key)) params.phone = key; else params.name = key;
+      const resp = await getMemberList(params);
+      setSearchResults(resp.data.data.list || []);
+    } catch {
+      setSearchResults([]);
+    } finally {
+      setSearching(false);
+    }
+  };
+
+  const handleSelectMember = async (m: Member) => {
+    setSelectedMember(m);
+    setSearchResults([]);
+    setSearchKey('');
+    setSelectedCardId(0);
+    try {
+      const resp = await getMemberCardList({ page: 1, page_size: 50, member_id: m.id });
+      setMemberCards(resp.data.data.list || []);
+    } catch {
+      setMemberCards([]);
+    }
+  };
+
+  const handleSubmit = async () => {
+    const cfg = modalConfig[modalType];
+    if (cfg.requireMember && !selectedMember) { alert('请选择会员'); return; }
+    if (!amount || amount <= 0) { alert('请输入金额'); return; }
+    try {
+      const data: any = { amount, remark };
+      if (selectedMember) {
+        data.member_id = selectedMember.id;
+        if (selectedCardId) data.member_card_id = selectedCardId;
+      }
+      if (modalType === 'recharge') await recharge(data);
+      else if (modalType === 'consume') await consume(data);
+      else await refund(data);
       setShowModal(false);
       fetchTransactions();
     } catch (err: any) {
@@ -157,7 +211,7 @@ export default function TransactionList() {
             ) : (
               transactions.map((tx) => (
                 <tr key={tx.id}>
-                  <td className="font-medium">{tx.member?.name || '-'}</td>
+                  <td className="font-medium">{tx.member?.name || '散客'}</td>
                   <td>{getTypeBadge(tx.tx_type)}</td>
                   <td className={`font-semibold ${tx.tx_type === 1 ? 'text-emerald-600 dark:text-emerald-400' : 'text-red-600 dark:text-red-400'}`}>
                     {tx.tx_type === 1 ? '+' : '-'}¥{tx.amount}
@@ -181,23 +235,66 @@ export default function TransactionList() {
         )}
       </div>
 
-      {/* 通用弹窗：充值/消费/退款 */}
+      {/* 通用弹窗 */}
       {showModal && (
         <div className="modal-mask" onClick={() => setShowModal(false)}>
           <div className="modal-card" onClick={(e) => e.stopPropagation()}>
             <h2 className="text-lg font-semibold text-[#1a2233] dark:text-white mb-5">{cfg.title}</h2>
             <div className="space-y-4">
+              {/* 会员搜索 */}
               <div>
-                <label className="label">会员 ID <span className="text-red-500">*</span></label>
-                <input type="number" value={modalData.member_id || ''} onChange={(e) => setModalData({ ...modalData, member_id: Number(e.target.value) })} className="input" placeholder="请输入会员 ID" />
+                <label className="label">
+                  会员 {cfg.requireMember && <span className="text-red-500">*</span>}
+                  {!cfg.requireMember && <span className="text-[#94a3b8] text-[12px] ml-1">（散客可不选）</span>}
+                </label>
+                {selectedMember ? (
+                  <div className="px-4 py-2.5 rounded-lg bg-[#f0fdf4] dark:bg-green-900/20 border border-green-200 dark:border-green-700/40 flex items-center justify-between">
+                    <span className="text-sm text-green-700 dark:text-green-300">{selectedMember.name}（{selectedMember.phone}）</span>
+                    <button onClick={() => { setSelectedMember(null); setMemberCards([]); setSelectedCardId(0); }} className="text-[#94a3b8] hover:text-red-400 text-[13px]">取消选择</button>
+                  </div>
+                ) : (
+                  <>
+                    <div className="flex gap-2">
+                      <input type="text" value={searchKey} onChange={(e) => setSearchKey(e.target.value)} onKeyDown={(e) => e.key === 'Enter' && handleSearch()} className="input flex-1" placeholder="输入姓名或手机号搜索" />
+                      <button onClick={handleSearch} disabled={searching} className="btn btn-secondary">{searching ? '...' : '搜索'}</button>
+                    </div>
+                    {searchResults.length > 0 && (
+                      <div className="mt-2 max-h-40 overflow-y-auto rounded-lg border border-[#e8ecf1] dark:border-gray-700">
+                        {searchResults.map((m) => (
+                          <div key={m.id} onClick={() => handleSelectMember(m)} className="px-4 py-2.5 cursor-pointer hover:bg-[#f1f5f9] dark:hover:bg-gray-700/50 border-b border-[#e8ecf1] dark:border-gray-700/60 last:border-0">
+                            <span className="font-medium text-[#1a2233] dark:text-white">{m.name}</span>
+                            <span className="text-[#94a3b8] ml-3 text-[13px]">{m.phone}</span>
+                          </div>
+                        ))}
+                      </div>
+                    )}
+                  </>
+                )}
               </div>
+
+              {/* 会员卡选择（选了会员才显示） */}
+              {selectedMember && memberCards.length > 0 && (
+                <div>
+                  <label className="label">关联会员卡 <span className="text-[#94a3b8] text-[12px] ml-1">（可选）</span></label>
+                  <select value={selectedCardId} onChange={(e) => setSelectedCardId(Number(e.target.value))} className="input">
+                    <option value={0}>不关联</option>
+                    {memberCards.map((c) => (
+                      <option key={c.id} value={c.id}>{c.card_type_info?.name || '卡'} - {c.card_no}</option>
+                    ))}
+                  </select>
+                </div>
+              )}
+
+              {/* 金额 */}
               <div>
                 <label className="label">{cfg.label} <span className="text-red-500">*</span></label>
-                <input type="number" step="0.01" value={modalData.amount || ''} onChange={(e) => setModalData({ ...modalData, amount: Number(e.target.value) })} className="input" placeholder="0.00" />
+                <input type="number" step="0.01" value={amount || ''} onChange={(e) => setAmount(Number(e.target.value))} className="input" placeholder="0.00" />
               </div>
+
+              {/* 备注 */}
               <div>
                 <label className="label">备注</label>
-                <input type="text" value={modalData.remark} onChange={(e) => setModalData({ ...modalData, remark: e.target.value })} className="input" placeholder="选填" />
+                <input type="text" value={remark} onChange={(e) => setRemark(e.target.value)} className="input" placeholder="选填" />
               </div>
             </div>
             <div className="flex justify-end gap-3 mt-6">

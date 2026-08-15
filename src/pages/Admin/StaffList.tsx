@@ -1,21 +1,32 @@
 import { useState, useEffect } from 'react';
-import { getStaffList, createStaff, updateStaff, resetStaffPassword } from '../../api/admin';
-import type { Staff } from '../../types';
+import { getStaffList, createStaff, updateStaff, resetStaffPassword, getRoleList } from '../../api/admin';
+import type { Staff, Role } from '../../types';
 import { formatTime } from '../../utils/format';
 
 export default function StaffList() {
   const [staffs, setStaffs] = useState<Staff[]>([]);
+  const [roles, setRoles] = useState<Role[]>([]);
   const [loading, setLoading] = useState(false);
   const [showModal, setShowModal] = useState(false);
   const [showPwdModal, setShowPwdModal] = useState(false);
   const [editingStaff, setEditingStaff] = useState<Staff | null>(null);
   const [pwdTarget, setPwdTarget] = useState<Staff | null>(null);
-  const [formData, setFormData] = useState({ username: '', password: '', nickname: '', role: 2 });
+  const [formData, setFormData] = useState({ username: '', password: '', nickname: '', role_id: 0 });
   const [newPassword, setNewPassword] = useState('');
 
   useEffect(() => {
     fetchStaffs();
+    fetchRoles();
   }, []);
+
+  const fetchRoles = async () => {
+    try {
+      const resp = await getRoleList();
+      setRoles(resp.data.data || []);
+    } catch {
+      setRoles([]);
+    }
+  };
 
   const fetchStaffs = async () => {
     setLoading(true);
@@ -31,20 +42,20 @@ export default function StaffList() {
 
   const openCreate = () => {
     setEditingStaff(null);
-    setFormData({ username: '', password: '', nickname: '', role: 2 });
+    setFormData({ username: '', password: '', nickname: '', role_id: roles[0]?.id || 0 });
     setShowModal(true);
   };
 
   const openEdit = (staff: Staff) => {
     setEditingStaff(staff);
-    setFormData({ username: staff.username, password: '', nickname: staff.nickname, role: staff.role });
+    setFormData({ username: staff.username, password: '', nickname: staff.nickname, role_id: staff.role_id || 0 });
     setShowModal(true);
   };
 
   const handleSubmit = async () => {
     try {
       if (editingStaff) {
-        await updateStaff(editingStaff.id, { nickname: formData.nickname, role: formData.role, status: editingStaff.status });
+        await updateStaff(editingStaff.id, { nickname: formData.nickname, role_id: formData.role_id, status: editingStaff.status });
       } else {
         await createStaff(formData);
       }
@@ -123,7 +134,7 @@ export default function StaffList() {
                   <td>
                     {staff.role === 1
                       ? <span className="badge badge-info"><span className="dot"></span>{staff.role_text}</span>
-                      : <span className="badge badge-muted"><span className="dot"></span>{staff.role_text}</span>}
+                      : <span className="badge badge-muted"><span className="dot"></span>{staff.role_name || staff.role_text}</span>}
                   </td>
                   <td>
                     {staff.status === 1
@@ -172,10 +183,10 @@ export default function StaffList() {
                 <input type="text" value={formData.nickname} onChange={(e) => setFormData({ ...formData, nickname: e.target.value })} className="input" placeholder="显示名称" />
               </div>
               <div>
-                <label className="label">角色</label>
-                <select value={formData.role} onChange={(e) => setFormData({ ...formData, role: Number(e.target.value) })} className="input">
-                  <option value={1}>管理员</option>
-                  <option value={2}>操作员</option>
+                <label className="label">角色 <span className="text-red-500">*</span></label>
+                <select value={formData.role_id} onChange={(e) => setFormData({ ...formData, role_id: Number(e.target.value) })} className="input">
+                  <option value={0}>请选择角色</option>
+                  {roles.map((r) => <option key={r.id} value={r.id}>{r.name}</option>)}
                 </select>
               </div>
             </div>
