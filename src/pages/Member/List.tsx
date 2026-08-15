@@ -5,8 +5,10 @@ import { exportMembers } from '../../api/export';
 import type { Member, MemberQuery } from '../../types';
 import { formatTime } from '../../utils/format';
 import BirthdayPicker from '../../components/BirthdayPicker';
+import { usePermission } from '../../hooks/usePermission';
 
 export default function MemberList() {
+  const { hasPermission } = usePermission();
   const [members, setMembers] = useState<Member[]>([]);
   const [total, setTotal] = useState(0);
   const [page, setPage] = useState(1);
@@ -112,16 +114,24 @@ export default function MemberList() {
           <p className="page-desc">共 {total} 位会员</p>
         </div>
         <div className="flex gap-3">
-          <button onClick={handleExport} disabled={exporting} className="btn btn-secondary">
-            <svg className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" /></svg>
-            {exporting ? '导出中...' : '导出'}
+          <button onClick={fetchMembers} disabled={loading} className="btn btn-secondary">
+            <svg className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" /></svg>
+            刷新
           </button>
-          <button onClick={() => setShowModal(true)} className="btn btn-primary">
-            <svg className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" d="M12 4v16m8-8H4" />
-            </svg>
-          添加会员
+          {hasPermission('member:export') && (
+            <button onClick={handleExport} disabled={exporting} className="btn btn-secondary">
+              <svg className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" /></svg>
+              {exporting ? '导出中...' : '导出'}
+            </button>
+          )}
+          {hasPermission('member:create') && (
+            <button onClick={() => setShowModal(true)} className="btn btn-primary">
+              <svg className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" d="M12 4v16m8-8H4" />
+              </svg>
+            添加会员
           </button>
+          )}
         </div>
       </div>
 
@@ -205,12 +215,12 @@ export default function MemberList() {
                   <td>
                     <div className="flex items-center justify-end gap-3">
                       <Link to={`/members/${member.id}`} className="link-btn">详情</Link>
-                      {member.status === 1 ? (
+                      {member.status === 1 && hasPermission('member:freeze') && (
                         <button onClick={() => handleFreeze(member.id)} className="link-btn warning">冻结</button>
-                      ) : member.status === 2 ? (
+                      )} {member.status === 2 && hasPermission('member:freeze') && (
                         <button onClick={() => handleUnfreeze(member.id)} className="link-btn success">解冻</button>
-                      ) : null}
-                      <button onClick={() => handleDelete(member.id)} className="link-btn danger">删除</button>
+                      )}
+                      {hasPermission('member:delete') && <button onClick={() => handleDelete(member.id)} className="link-btn danger">删除</button>}
                     </div>
                   </td>
                 </tr>

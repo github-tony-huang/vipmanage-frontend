@@ -5,6 +5,7 @@ import { getMemberCardList } from '../../api/card';
 import { exportTransactions } from '../../api/export';
 import type { Transaction, TransactionQuery, Member, MemberCard } from '../../types';
 import { formatTime } from '../../utils/format';
+import { usePermission } from '../../hooks/usePermission';
 
 type ModalType = 'recharge' | 'consume' | 'refund';
 
@@ -15,6 +16,7 @@ const modalConfig: Record<ModalType, { title: string; label: string; btn: string
 };
 
 export default function TransactionList() {
+  const { hasPermission } = usePermission();
   const [transactions, setTransactions] = useState<Transaction[]>([]);
   const [total, setTotal] = useState(0);
   const [page, setPage] = useState(1);
@@ -151,22 +153,34 @@ export default function TransactionList() {
           <p className="page-desc">共 {total} 笔交易</p>
         </div>
         <div className="flex gap-3">
-          <button onClick={handleExport} disabled={exporting} className="btn btn-secondary">
-            <svg className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" /></svg>
-            {exporting ? '导出中...' : '导出'}
+          <button onClick={fetchTransactions} disabled={loading} className="btn btn-secondary">
+            <svg className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" /></svg>
+            刷新
           </button>
-          <button onClick={() => openModal('consume')} className="btn btn-primary">
-            <svg className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" d="M20 12H4" /></svg>
-            消费
-          </button>
-          <button onClick={() => openModal('refund')} className="btn btn-secondary">
-            <svg className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" d="M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z" /></svg>
-            退款
-          </button>
-          <button onClick={() => openModal('recharge')} className="btn btn-success">
-            <svg className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" d="M12 4v16m8-8H4" /></svg>
-            充值
-          </button>
+          {hasPermission('transaction:export') && (
+            <button onClick={handleExport} disabled={exporting} className="btn btn-secondary">
+              <svg className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" /></svg>
+              {exporting ? '导出中...' : '导出'}
+            </button>
+          )}
+          {hasPermission('transaction:consume') && (
+            <button onClick={() => openModal('consume')} className="btn btn-primary">
+              <svg className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" d="M20 12H4" /></svg>
+              消费
+            </button>
+          )}
+          {hasPermission('transaction:refund') && (
+            <button onClick={() => openModal('refund')} className="btn btn-secondary">
+              <svg className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" d="M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z" /></svg>
+              退款
+            </button>
+          )}
+          {hasPermission('transaction:recharge') && (
+            <button onClick={() => openModal('recharge')} className="btn btn-success">
+              <svg className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" d="M12 4v16m8-8H4" /></svg>
+              充值
+            </button>
+          )}
         </div>
       </div>
 

@@ -1,8 +1,10 @@
 import { useState, useEffect } from 'react';
 import { getCardTypeList, createCardType, updateCardType, deleteCardType } from '../../api/card';
 import type { CardType } from '../../types';
+import { usePermission } from '../../hooks/usePermission';
 
 export default function CardTypeList() {
+  const { hasPermission } = usePermission();
   const [cardTypes, setCardTypes] = useState<CardType[]>([]);
   const [loading, setLoading] = useState(false);
   const [showModal, setShowModal] = useState(false);
@@ -88,10 +90,18 @@ export default function CardTypeList() {
           <h1 className="page-title">卡种管理</h1>
           <p className="page-desc">共 {cardTypes.length} 种卡</p>
         </div>
-        <button onClick={() => { resetForm(); setShowModal(true); }} className="btn btn-primary">
-          <svg className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" d="M12 4v16m8-8H4" /></svg>
-          添加卡种
-        </button>
+        <div className="flex gap-3">
+          <button onClick={fetchCardTypes} disabled={loading} className="btn btn-secondary">
+            <svg className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" /></svg>
+            刷新
+          </button>
+          {hasPermission('cardtype:create') && (
+            <button onClick={() => { resetForm(); setShowModal(true); }} className="btn btn-primary">
+              <svg className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" d="M12 4v16m8-8H4" /></svg>
+              添加卡种
+            </button>
+          )}
+        </div>
       </div>
 
       {/* 卡种列表 */}
@@ -137,8 +147,8 @@ export default function CardTypeList() {
                   </td>
                   <td>
                     <div className="flex items-center justify-end gap-3">
-                      <button onClick={() => handleEdit(ct)} className="link-btn">编辑</button>
-                      <button onClick={() => handleDelete(ct.id)} className="link-btn danger">删除</button>
+                      {hasPermission('cardtype:edit') && <button onClick={() => handleEdit(ct)} className="link-btn">编辑</button>}
+                      {hasPermission('cardtype:delete') && <button onClick={() => handleDelete(ct.id)} className="link-btn danger">删除</button>}
                     </div>
                   </td>
                 </tr>

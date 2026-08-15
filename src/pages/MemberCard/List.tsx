@@ -4,8 +4,10 @@ import { getMemberCardList, freezeMemberCard, unfreezeMemberCard, refundMemberCa
 import { getMemberList } from '../../api/member';
 import type { MemberCard, MemberCardQuery, Member } from '../../types';
 import { formatTime, calcRemainDays } from '../../utils/format';
+import { usePermission } from '../../hooks/usePermission';
 
 export default function MemberCardList() {
+  const { hasPermission } = usePermission();
   const [cards, setCards] = useState<MemberCard[]>([]);
   const [total, setTotal] = useState(0);
   const [page, setPage] = useState(1);
@@ -112,9 +114,15 @@ export default function MemberCardList() {
   return (
     <div className="space-y-5">
       {/* 页头 */}
-      <div>
-        <h1 className="page-title">会员卡管理</h1>
-        <p className="page-desc">共 {total} 张会员卡</p>
+      <div className="flex items-center justify-between">
+        <div>
+          <h1 className="page-title">会员卡管理</h1>
+          <p className="page-desc">共 {total} 张会员卡</p>
+        </div>
+        <button onClick={fetchCards} disabled={loading} className="btn btn-secondary">
+          <svg className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" /></svg>
+          刷新
+        </button>
       </div>
 
       {/* 搜索栏 */}
@@ -174,17 +182,17 @@ export default function MemberCardList() {
                     <div className="flex items-center justify-end gap-3">
                       {card.status === 1 && (
                         <>
-                          <button onClick={() => handleFreeze(card.id)} className="link-btn warning">冻结</button>
-                          <button onClick={() => handleRefund(card.id)} className="link-btn danger">退卡</button>
+                          {hasPermission('card:freeze') && <button onClick={() => handleFreeze(card.id)} className="link-btn warning">冻结</button>}
+                          {hasPermission('card:refund') && <button onClick={() => handleRefund(card.id)} className="link-btn danger">退卡</button>}
                         </>
                       )}
-                      {card.status === 2 && (
+                      {card.status === 2 && hasPermission('card:freeze') && (
                         <button onClick={() => handleUnfreeze(card.id)} className="link-btn success">解冻</button>
                       )}
                       {card.status !== 5 && (
                         <>
-                          <button onClick={() => { setRenewTarget(card); setRenewDays(30); }} className="link-btn">续卡</button>
-                          <button onClick={() => { setTransferTarget(card); setTransferSearchKey(''); setTransferResults([]); setTransferSelected(null); }} className="link-btn">转卡</button>
+                          {hasPermission('card:renew') && <button onClick={() => { setRenewTarget(card); setRenewDays(30); }} className="link-btn">续卡</button>}
+                          {hasPermission('card:transfer') && <button onClick={() => { setTransferTarget(card); setTransferSearchKey(''); setTransferResults([]); setTransferSelected(null); }} className="link-btn">转卡</button>}
                         </>
                       )}
                     </div>

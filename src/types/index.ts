@@ -24,6 +24,7 @@ export interface Admin {
   role: number;
   role_text: string;
   role_id?: number;
+  role_name?: string;
   permissions: string[];
 }
 

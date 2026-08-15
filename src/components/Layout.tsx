@@ -187,7 +187,7 @@ export default function Layout() {
               <p className="text-[13.5px] font-semibold text-[#1a2233] dark:text-gray-100 truncate">
                 {admin?.nickname || '管理员'}
               </p>
-              <p className="text-xs text-[#94a3b8] dark:text-gray-500">{admin?.role_text}</p>
+              <p className="text-xs text-[#94a3b8] dark:text-gray-500">{admin?.role_name || admin?.role_text}</p>
             </div>
             <button
               onClick={handleLogout}
